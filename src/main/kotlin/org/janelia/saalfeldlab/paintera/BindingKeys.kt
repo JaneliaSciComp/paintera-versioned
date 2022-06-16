@@ -32,6 +32,7 @@ object PainteraBaseKeys {
     const val MAXIMIZE_VIEWER_AND_3D           = "toggle maximize viewer and 3D"
     const val SHOW_OPEN_DATASET_MENU           = "show open dataset menu"
     const val CREATE_NEW_LABEL_DATASET         = "create new label dataset"
+    const val CREATE_NEW_VERSIONED_LABEL_DATASET = "create new versioned label dataset"
     const val SHOW_REPL_TABS                   = "open repl"
     const val TOGGLE_FULL_SCREEN               = "toggle full screen"
     const val OPEN_DATA                        = "open data"
