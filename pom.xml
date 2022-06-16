@@ -81,11 +81,8 @@
 
 
 	<dependencies>
-		<dependency>
-			<groupId>org.janus</groupId>
-			<artifactId>janus_jclient</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
-		</dependency>
+
+
 		<dependency>
 			<groupId>org.janelia.saalfeldlab</groupId>
 			<artifactId>n5-aws-s3</artifactId>
@@ -278,6 +275,17 @@
 			<artifactId>fxyz3d</artifactId>
 			<version>0.5.2</version>
 			<!--		need to exclude slf4j-simple because of fxyz3d dependency -->
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-simple</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.janus</groupId>
+			<artifactId>janus_jclient</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
