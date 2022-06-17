@@ -73,7 +73,7 @@
 		<n5-google-cloud.version>3.3.2</n5-google-cloud.version>
 		<imglib2-algorithm.version>0.12.0</imglib2-algorithm.version>
 		<n5-aws-s3.version>3.2.0</n5-aws-s3.version>
-		<n5-zarr.version>0.0.6</n5-zarr.version>
+		<n5-zarr.version>0.0.8.1-SNAPSHOT</n5-zarr.version>
 		<alphanumeric-comparator.version>1.4.1</alphanumeric-comparator.version>
 		<dokka.version>1.4.30</dokka.version>
 		<!--<enforcer.skip>true</enforcer.skip>-->
@@ -820,7 +820,11 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+                <configuration>
+                    <source>16</source>
+                    <target>16</target>
+                </configuration>
+            </plugin>
 			<!--		copy README.md instead of symlink-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

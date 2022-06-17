@@ -37,6 +37,7 @@ import org.janelia.saalfeldlab.paintera.state.metadata.N5ContainerState
 import org.janelia.saalfeldlab.paintera.ui.PainteraAlerts
 import org.janelia.saalfeldlab.util.n5.N5Data
 import org.janelia.saalfeldlab.util.n5.N5Helpers
+import org.janus.api.VersionedStorageAPI
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
@@ -57,7 +58,8 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
             *SubmitOn.values()
         )
     }
-
+//Select remote repo
+    // create
     private val populateFromCurrentSource = MenuItem("_From Current Source").apply {
         onAction = EventHandler {
             it.consume()
@@ -79,9 +81,11 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
 
     private val setFromButton = MenuButton("_Populate", null, populateFromSource, populateFromCurrentSource)
     private val setFromCurrentBox = HBox(bufferNode(), setFromButton).apply { HBox.setHgrow(children[0], Priority.ALWAYS) }
+    private val username = TextField().apply { maxWidth = Double.MAX_VALUE }
     private val name = TextField().apply { maxWidth = Double.MAX_VALUE }
 
-    private val n5Container: DirectoryField = DirectoryField(System.getProperty("user.home"), 100.0)
+    private val projectPath: DirectoryField = DirectoryField("", 100.0)
+    private val localPath: DirectoryField = DirectoryField("", 100.0)
     private val dataset = stringField("", *SubmitOn.values()).apply {
         valueProperty().addListener { _, _, newv: String? ->
             if (newv != null && name.text.isNullOrEmpty()) {
@@ -98,8 +102,10 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
     private val offset = doubleField(0.0, { true }, 100.0, *SubmitOn.values())
     private val scaleLevels = TitledPane("Scale Levels", mipmapLevelsNode)
     private val pane = VBox(
+        nameIt("Username", NAME_WIDTH, true, username),
         nameIt("Name", NAME_WIDTH, true, name),
-        nameIt("N5", NAME_WIDTH, true, n5Container.asNode()),
+        nameIt("Project path", NAME_WIDTH, true, projectPath.asNode()),
+        nameIt("Local path", NAME_WIDTH, true, localPath.asNode()),
         nameIt("Dataset", NAME_WIDTH, true, dataset.textField),
         nameIt("Dimensions", NAME_WIDTH, false, bufferNode(), dimensions.node),
         nameIt("Block Size", NAME_WIDTH, false, bufferNode(), blockSize.node),
@@ -115,21 +121,24 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
 
     fun showDialog(projectDirectory: String?): Optional<Pair<MetadataState, String>> {
         val metadataStateProp = SimpleObjectProperty<MetadataState>()
-        n5Container.directoryProperty().value = Path.of(projectDirectory!!).toFile()
+        localPath.directoryProperty().value = Path.of(projectDirectory!!).toFile()
         PainteraAlerts.confirmation("C_reate", "_Cancel", true).apply {
             headerText = "Create new Versioned Label dataset"
             dialogPane.content = pane
             dialogPane.lookupButton(ButtonType.OK).addEventFilter(ActionEvent.ACTION) { e: ActionEvent ->
-                val container = n5Container.directoryProperty().value!!.absolutePath
+                val username = username.text
+                val projectPath = projectPath.directoryProperty().value!!.absolutePath
+                val localPath = localPath.directoryProperty().value!!.absolutePath
                 val dataset = dataset.value
                 val name = name.text
                 try {
-                    LOG.debug("Trying to create empty label dataset `{}' in container `{}'", dataset, container)
+                    LOG.debug("Trying to create empty label dataset `{}' in the project `{}'", dataset, projectPath)
                     if (dataset.isNullOrEmpty()) throw IOException("Dataset not specified!")
                     if (name.isNullOrEmpty()) throw IOException("Name not specified!")
 
-                    N5Data.createEmptyLabelDataset(
-                        container,
+                    VersionedStorageAPI.createEmptyLabelDataset(username,name,
+                        projectPath,
+                        localPath,
                         dataset,
                         dimensions.asLongArray(),
                         blockSize.asIntArray(),
@@ -139,13 +148,13 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
                         mipmapLevels.stream().mapToInt { it.maxNumEntries() }.toArray()
                     )
 
-                    val pathToDataset = Path.of(container, dataset).toFile().canonicalPath
-                    val writer = n5Factory.openWriter(pathToDataset)
-                    N5Helpers.parseMetadata(writer).ifPresent { tree: N5TreeNode ->
-                        val metadata = tree.metadata
-                        val containerState = N5ContainerState(container, writer, writer)
-                        createMetadataState(containerState, metadata).ifPresent { metadataStateProp.set(it) }
-                    }
+//                    val pathToDataset = Path.of(container, dataset).toFile().canonicalPath
+//                    val writer = n5Factory.openWriter(pathToDataset)
+//                    N5Helpers.parseMetadata(writer).ifPresent { tree: N5TreeNode ->
+//                        val metadata = tree.metadata
+//                        val containerState = N5ContainerState(container, writer, writer)
+//                        createMetadataState(containerState, metadata).ifPresent { metadataStateProp.set(it) }
+//                    }
                 } catch (ex: IOException) {
                     LOG.error("Unable to create empty dataset", ex)
                     e.consume()
@@ -163,7 +172,7 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
             if (source is N5DataSourceMetadata<*, *>) {
                 val metadataState = source.metadataState
                 val container = metadataState.n5ContainerState.url
-                n5Container.directoryProperty().value = File(container)
+                projectPath.directoryProperty().value = File(container)
             }
             val data = source.getSource(0, 0)
             dimensions.x.value = data.dimension(0)
