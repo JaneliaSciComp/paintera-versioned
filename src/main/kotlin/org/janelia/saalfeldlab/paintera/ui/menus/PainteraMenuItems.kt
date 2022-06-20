@@ -13,7 +13,9 @@ import org.janelia.saalfeldlab.paintera.ui.dialogs.KeyBindingsDialog
 import org.janelia.saalfeldlab.paintera.ui.dialogs.ReadMeDialog
 import org.janelia.saalfeldlab.paintera.ui.dialogs.ReplDialog
 import org.janelia.saalfeldlab.paintera.ui.dialogs.create.CreateDatasetHandler
-import org.janelia.saalfeldlab.paintera.ui.dialogs.create.CreateVersionedDatasetHandler
+import org.janelia.saalfeldlab.paintera.ui.dialogs.create.versioned.CloneVersionedDatasetHandler
+import org.janelia.saalfeldlab.paintera.ui.dialogs.create.versioned.CreateVersionedDatasetHandler
+import org.janelia.saalfeldlab.paintera.ui.dialogs.create.versioned.OpenVersionedDatasetHandler
 import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.menu.intersecting.IntersectingSourceStateOpener
 import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.menu.thresholded.ThresholdedRawSourceStateOpenerDialog
 import org.janelia.saalfeldlab.paintera.PainteraBaseKeys as PBK
@@ -27,7 +29,9 @@ enum class PainteraMenuItems(private val text: String, private val keys: String,
     CYCLE_BACKWARD("Cycle _Backward", PBK.CYCLE_CURRENT_SOURCE_BACKWARD, allowedAction = MenuActionType.ChangeActiveSource),
     TOGGLE_VISIBILITY("Toggle _Visibility", PBK.TOGGLE_CURRENT_SOURCE_VISIBILITY),
     NEW_LABEL_SOURCE("_Label Source (N5)", PBK.CREATE_NEW_LABEL_DATASET, allowedAction = MenuActionType.AddSource),
-    NEW_VERSIONED_LABEL_SOURCE("_Versioned Store", PBK.CREATE_NEW_VERSIONED_LABEL_DATASET, allowedAction = MenuActionType.AddSource),
+    CLONE_VERSIONED_PROJECT_SOURCE("_Clone project", PBK.CLONE_VERSIONED_PROJECT, allowedAction = MenuActionType.AddSource),
+    NEW_VERSIONED_LABEL_SOURCE("_Create new dataset", PBK.CREATE_VERSIONED_LABEL_DATASET, allowedAction = MenuActionType.AddSource),
+    OPEN_VERSIONED_LABEL_SOURCE("Open project", PBK.OPEN_VERSIONED_LABEL_DATASET, allowedAction = MenuActionType.AddSource),
     NEW_CONNECTED_COMPONENT_SOURCE("_Fill Connected Components", PBK.FILL_CONNECTED_COMPONENTS),
     NEW_THRESHOLDED_SOURCE("_Thresholded", PBK.THRESHOLDED),
     TOGGLE_MENU_BAR_VISIBILITY("Toggle _Visibility", PBK.TOGGLE_MENUBAR_VISIBILITY),
@@ -62,7 +66,9 @@ enum class PainteraMenuItems(private val text: String, private val keys: String,
                 PBK.CYCLE_CURRENT_SOURCE_BACKWARD to EventHandler<ActionEvent> { baseView.sourceInfo().decrementCurrentSourceIndex() },
                 PBK.TOGGLE_CURRENT_SOURCE_VISIBILITY to EventHandler<ActionEvent> { CurrentSourceVisibilityToggle(baseView.sourceInfo().currentState()).toggleIsVisible() },
                 PBK.CREATE_NEW_LABEL_DATASET to EventHandler<ActionEvent> { CreateDatasetHandler.createAndAddNewLabelDataset(baseView) { projectDirectory.actualDirectory.absolutePath } },
-                PBK.CREATE_NEW_VERSIONED_LABEL_DATASET to EventHandler<ActionEvent> { CreateVersionedDatasetHandler.createAndAddNewLabelDataset(baseView) { projectDirectory.actualDirectory.absolutePath } },
+                PBK.CREATE_VERSIONED_LABEL_DATASET to EventHandler<ActionEvent> { CreateVersionedDatasetHandler.createAndAddNewLabelDataset(baseView) { projectDirectory.actualDirectory.absolutePath } },
+                PBK.OPEN_VERSIONED_LABEL_DATASET to EventHandler<ActionEvent> { OpenVersionedDatasetHandler.createAndAddNewLabelDataset(baseView) { projectDirectory.actualDirectory.absolutePath } },
+                PBK.CLONE_VERSIONED_PROJECT to EventHandler<ActionEvent> { CloneVersionedDatasetHandler.createAndAddNewLabelDataset(baseView) { projectDirectory.actualDirectory.absolutePath } },
                 PBK.SHOW_REPL_TABS to EventHandler<ActionEvent> { replDialog.show() },
                 PBK.TOGGLE_FULL_SCREEN to EventHandler<ActionEvent> { properties.windowProperties::isFullScreen.let { it.set(!it.get()) } },
                 PBK.OPEN_README to EventHandler<ActionEvent> { ReadMeDialog.showReadme() },

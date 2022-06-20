@@ -62,9 +62,10 @@ private val currentSourceMenu by lazy {
 private val showVersion by lazy { MenuItem("Show _Version").apply { onAction = EventHandler { PainteraAlerts.versionDialog().show() } } }
 
 private val fileMenu by lazy { Menu("_File", null, openMenu, SAVE.menu, SAVE_AS.menu, QUIT.menu) }
-private val newSourceMenu by lazy { Menu("_New", null, NEW_LABEL_SOURCE.menu,NEW_VERSIONED_LABEL_SOURCE.menu) }
+private val newSourceMenu by lazy { Menu("_New", null, NEW_LABEL_SOURCE.menu) }
+private val versionedSourceMenu by lazy { Menu("_Versioned", null, CLONE_VERSIONED_PROJECT_SOURCE.menu,NEW_VERSIONED_LABEL_SOURCE.menu,OPEN_VERSIONED_LABEL_SOURCE.menu) }
 private val newVirtualSourceMenu by lazy { Menu("_Virtual", null, NEW_CONNECTED_COMPONENT_SOURCE.menu, NEW_THRESHOLDED_SOURCE.menu) }
-private val sourcesMenu by lazy { Menu("_Sources", null, currentSourceMenu, newSourceMenu, newVirtualSourceMenu) }
+private val sourcesMenu by lazy { Menu("_Sources", null, currentSourceMenu, newSourceMenu,versionedSourceMenu, newVirtualSourceMenu) }
 private val menuBarMenu by lazy { Menu("_Menu Bar", null, TOGGLE_MENU_BAR_VISIBILITY.menu, TOGGLE_MENU_BAR_MODE.menu) }
 private val statusBarMenu by lazy { Menu("S_tatus Bar", null, TOGGLE_STATUS_BAR_VISIBILITY.menu, TOGGLE_STATUS_BAR_MODE.menu) }
 private val sideBarMenu by lazy { Menu("_Side Bar", null, TOGGLE_SIDE_BAR_MENU_ITEM.menu) }
