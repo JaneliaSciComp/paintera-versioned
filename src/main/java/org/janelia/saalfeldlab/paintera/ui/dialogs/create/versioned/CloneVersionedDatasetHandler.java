@@ -3,6 +3,7 @@ package org.janelia.saalfeldlab.paintera.ui.dialogs.create.versioned;
 import bdv.viewer.Source;
 import javafx.scene.Scene;
 import javafx.scene.SubScene;
+import org.janelia.saalfeldlab.fx.ui.DirectoryField;
 import org.janelia.saalfeldlab.fx.ui.Exceptions;
 import org.janelia.saalfeldlab.paintera.Constants;
 import org.janelia.saalfeldlab.paintera.PainteraBaseView;
@@ -10,6 +11,7 @@ import org.janelia.saalfeldlab.paintera.control.actions.MenuActionType;
 import org.janelia.saalfeldlab.paintera.state.SourceState;
 import org.janelia.saalfeldlab.paintera.ui.dialogs.create.CloneVersionedDataset;
 import org.janelia.saalfeldlab.paintera.viewer3d.Viewer3DFX;
+import org.janus.api.VersionedStorageAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +76,7 @@ public class CloneVersionedDatasetHandler {
 		}
 
 		final CloneVersionedDataset cd = new CloneVersionedDataset(currentSource, Arrays.stream(allSources).map(pbv.sourceInfo()::getState).toArray(SourceState[]::new));
-		cd.showDialog(projectDirectory.get());
+		String path = cd.showDialog(projectDirectory.get());
+		VersionedStorageAPI.setCurrentPath(path);
 	}
 }

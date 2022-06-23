@@ -24,24 +24,24 @@ class CloneVersionedDataset(private val currentSource: Source<*>?, vararg allSou
 
     private val username = TextField().apply { maxWidth = Double.MAX_VALUE }
     private val projectPath: DirectoryField = DirectoryField("", 100.0)
-    private val localPath: DirectoryField = DirectoryField("", 100.0)
+    private val localPath = TextField().apply { maxWidth = Double.MAX_VALUE }
 
     private val pane = VBox(
         nameIt("Username", NAME_WIDTH, true, username),
         nameIt("Project path", NAME_WIDTH, true, projectPath.asNode()),
-        nameIt("Local path", NAME_WIDTH, true, localPath.asNode())
+        nameIt("Local path", NAME_WIDTH, true, localPath)
     )
 
-    fun showDialog(projectDirectory: String?) {
-        localPath.directoryProperty().value = Path.of(projectDirectory!!).toFile()
+    fun showDialog(projectDirectory: String?): String {
+//        localPath.directoryProperty().value = Path.of(projectDirectory!!).toFile()
         PainteraAlerts.confirmation("C_lone", "_Cancel", true).apply {
             headerText = "Clone project"
             dialogPane.content = pane
             dialogPane.lookupButton(ButtonType.OK).addEventFilter(ActionEvent.ACTION) { e: ActionEvent ->
                 val username = username.text
                 val projectPath = projectPath.directoryProperty().value!!.absolutePath
-                val localPath = localPath.directoryProperty().value!!.absolutePath
-
+                val localPath = localPath.text
+print("hello")
                 try {
                     LOG.debug("Trying to clone project `{}'", projectPath)
                     if (projectPath.isNullOrEmpty()) throw IOException("Project Path not specified!")
@@ -49,6 +49,7 @@ class CloneVersionedDataset(private val currentSource: Source<*>?, vararg allSou
                     if (username.isNullOrEmpty()) throw IOException("Username not specified!")
                     // TODO in thread and waiting gui
                     VersionedStorageAPI.cloneProject(projectPath, localPath, username)
+                    // TODO set in the state the project path
                 } catch (ex: IOException) {
                     LOG.error("Unable to create empty dataset", ex)
                     e.consume()
@@ -57,7 +58,7 @@ class CloneVersionedDataset(private val currentSource: Source<*>?, vararg allSou
             }
         }.showAndWait()
 
-        return
+        return localPath.text
     }
 
     companion object {
