@@ -49,6 +49,7 @@ import org.janelia.saalfeldlab.paintera.state.metadata.SingleScaleMetadataState;
 import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.VolatileHelpers;
 import org.janelia.saalfeldlab.util.NamedThreadFactory;
 import org.janelia.saalfeldlab.util.TmpVolatileHelpers;
+import org.janelia.scicomp.v5.VersionedN5Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -846,4 +847,102 @@ public class N5Data {
 
 	}
   }
+
+	/**
+	 * @param container            container
+	 * @param group                target group in {@code container}
+	 * @param dimensions           size
+	 * @param blockSize            chunk size
+	 * @param resolution           voxel size
+	 * @param offset               in world coordinates
+	 * @param relativeScaleFactors relative scale factors for multi-scale data, e.g.
+	 *                             {@code [2,2,1], [2,2,2]} will result in absolute factors {@code [1,1,1], [2,2,1], [4,4,2]}.
+	 * @param maxNumEntries        limit number of entries in each {@link LabelMultiset} (set to less than or equal to zero for unbounded)
+	 * @param ignoreExisiting      overwrite any existing data set
+	 * @return
+	 * @throws IOException if any n5 operation throws {@link IOException} or {@code group}
+	 *                     already exists and {@code ignorExisting} is {@code false}
+	 */
+	public static N5Writer createEmptyVersionedLabelDataset(
+			final String container,
+			final String group,
+			final long[] dimensions,
+			final int[] blockSize,
+			final double[] resolution,
+			final double[] offset,
+			final double[][] relativeScaleFactors,
+			final int[] maxNumEntries,
+			final boolean ignoreExisiting) throws IOException {
+
+		//		{"painteraData":{"type":"label"},
+		// "maxId":191985,
+		// "labelBlockLookup":{"attributes":{},"root":"/home/phil/local/tmp/sample_a_padded_20160501.n5",
+		// "scaleDatasetPattern":"volumes/labels/neuron_ids/oke-test/s%d","type":"n5-filesystem"}}
+
+		final Map<String, String> pd = new HashMap<>();
+		pd.put("type", "label");
+		final N5Writer n5 = VersionedN5Writer.createMaster(container);
+		final String uniqueLabelsGroup = String.format("%s/unique-labels", group);
+
+		if (!ignoreExisiting && n5.datasetExists(group))
+			throw new IOException(String.format("Dataset `%s' already exists in container `%s'", group, container));
+
+		if (!n5.exists(group))
+			n5.createGroup(group);
+
+		if (!ignoreExisiting && n5.listAttributes(group).containsKey(N5Helpers.PAINTERA_DATA_KEY))
+			throw new IOException(String.format("Group `%s' exists in container `%s' and is Paintera data set", group, container));
+
+		if (!ignoreExisiting && n5.exists(uniqueLabelsGroup))
+			throw new IOException(String.format("Unique labels group `%s' exists in container `%s' -- conflict likely.", uniqueLabelsGroup, container));
+
+		n5.setAttribute(group, N5Helpers.PAINTERA_DATA_KEY, pd);
+		n5.setAttribute(group, N5Helpers.MAX_ID_KEY, 1L);
+
+		final String dataGroup = String.format("%s/data", group);
+		n5.createGroup(dataGroup);
+
+		// {"maxId":191978,"multiScale":true,"offset":[3644.0,3644.0,1520.0],"resolution":[4.0,4.0,40.0],
+		// "isLabelMultiset":true}%
+		n5.setAttribute(dataGroup, N5Helpers.MULTI_SCALE_KEY, true);
+		n5.setAttribute(dataGroup, N5Helpers.OFFSET_KEY, offset);
+		n5.setAttribute(dataGroup, N5Helpers.RESOLUTION_KEY, resolution);
+		n5.setAttribute(dataGroup, N5Helpers.IS_LABEL_MULTISET_KEY, true);
+
+		n5.createGroup(uniqueLabelsGroup);
+		n5.setAttribute(uniqueLabelsGroup, N5Helpers.MULTI_SCALE_KEY, true);
+
+		final String scaleDatasetPattern = String.format("%s/s%%d", dataGroup);
+		final String scaleUniqueLabelsPattern = String.format("%s/s%%d", uniqueLabelsGroup);
+		final long[] scaledDimensions = dimensions.clone();
+		final double[] accumulatedFactors = new double[]{1.0, 1.0, 1.0};
+		for (int scaleLevel = 0, downscaledLevel = -1; downscaledLevel < relativeScaleFactors.length; ++scaleLevel, ++downscaledLevel) {
+			final double[] scaleFactors = downscaledLevel < 0 ? null : relativeScaleFactors[downscaledLevel];
+
+			if (scaleFactors != null) {
+				Arrays.setAll(scaledDimensions, dim -> (long)Math.ceil(scaledDimensions[dim] / scaleFactors[dim]));
+				Arrays.setAll(accumulatedFactors, dim -> accumulatedFactors[dim] * scaleFactors[dim]);
+			}
+
+			final String dataset = String.format(scaleDatasetPattern, scaleLevel);
+			final String uniqeLabelsDataset = String.format(scaleUniqueLabelsPattern, scaleLevel);
+			final int maxNum = downscaledLevel < 0 ? -1 : maxNumEntries[downscaledLevel];
+			n5.createDataset(dataset, scaledDimensions, blockSize, DataType.UINT8, new GzipCompression());
+			n5.createDataset(uniqeLabelsDataset, scaledDimensions, blockSize, DataType.UINT64, new GzipCompression());
+
+			// {"maxNumEntries":-1,"compression":{"type":"gzip","level":-1},"downsamplingFactors":[2.0,2.0,1.0],"blockSize":[64,64,64],"dataType":"uint8","dimensions":[625,625,125],
+			// "isLabelMultiset":true}%
+			n5.setAttribute(dataset, N5Helpers.MAX_NUM_ENTRIES_KEY, maxNum);
+			n5.setAttribute(dataset, N5Helpers.IS_LABEL_MULTISET_KEY, true);
+
+			if (scaleLevel != 0) {
+				n5.setAttribute(dataset, N5Helpers.DOWNSAMPLING_FACTORS_KEY, accumulatedFactors);
+				n5.setAttribute(uniqeLabelsDataset, N5Helpers.DOWNSAMPLING_FACTORS_KEY, accumulatedFactors);
+			}
+
+			// {"compression":{"type":"gzip","level":-1},"downsamplingFactors":[2.0,2.0,1.0],"blockSize":[64,64,64],"dataType":"uint64","dimensions":[625,625,125]}
+
+		}
+		return n5;
+	}
 }

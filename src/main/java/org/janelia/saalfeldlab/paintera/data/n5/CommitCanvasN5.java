@@ -52,6 +52,7 @@ import org.janelia.saalfeldlab.paintera.exception.PainteraException;
 import org.janelia.saalfeldlab.paintera.state.metadata.MetadataState;
 import org.janelia.saalfeldlab.util.math.ArrayMath;
 import org.janelia.saalfeldlab.util.n5.N5Helpers;
+import org.janelia.scicomp.api.VersionedStorageAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -303,6 +304,9 @@ public class CommitCanvasN5 implements PersistCanvas {
 					level,
 					blockDiffsAt);
 
+		}
+		if(VersionedStorageAPI.isIsVersioned()){
+			VersionedStorageAPI.commit(canvas,blocks);
 		}
 		InvokeOnJavaFXApplicationThread.invoke(() -> progress.set(1.0));
 

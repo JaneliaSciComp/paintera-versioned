@@ -37,14 +37,13 @@ import org.janelia.saalfeldlab.paintera.state.metadata.N5ContainerState
 import org.janelia.saalfeldlab.paintera.ui.PainteraAlerts
 import org.janelia.saalfeldlab.util.n5.N5Data
 import org.janelia.saalfeldlab.util.n5.N5Helpers
-import org.janus.api.VersionedStorageAPI
+import org.janelia.scicomp.api.VersionedStorageAPI
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.lang.invoke.MethodHandles
 import java.nio.file.Path
 import java.util.Optional
-import kotlin.streams.toList
 
 
 class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSources: SourceState<*, *>) {

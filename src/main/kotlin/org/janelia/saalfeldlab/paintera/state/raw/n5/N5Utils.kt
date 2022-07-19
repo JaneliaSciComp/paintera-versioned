@@ -7,6 +7,7 @@ import org.janelia.saalfeldlab.n5.googlecloud.N5GoogleCloudStorageReader
 import org.janelia.saalfeldlab.n5.hdf5.N5HDF5Reader
 import org.janelia.saalfeldlab.n5.s3.N5AmazonS3Reader
 import org.janelia.saalfeldlab.util.n5.N5Helpers
+import org.janelia.scicomp.v5.VersionedN5Reader
 import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
@@ -20,6 +21,7 @@ object N5Utils {
         is N5HDF5Reader -> "h5://${filename.absolutePath}"
         is N5AmazonS3Reader -> getS3Url()
         is N5GoogleCloudStorageReader -> getGoogleCloudUrl()
+        is VersionedN5Reader -> basePath
         else -> "??://${toString()}"
     }
 
