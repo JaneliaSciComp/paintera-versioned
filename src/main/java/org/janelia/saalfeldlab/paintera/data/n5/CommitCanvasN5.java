@@ -305,9 +305,7 @@ public class CommitCanvasN5 implements PersistCanvas {
 					blockDiffsAt);
 
 		}
-		if(VersionedStorageAPI.isIsVersioned()){
-			VersionedStorageAPI.commit(canvas,blocks);
-		}
+
 		InvokeOnJavaFXApplicationThread.invoke(() -> progress.set(1.0));
 
 	  }
