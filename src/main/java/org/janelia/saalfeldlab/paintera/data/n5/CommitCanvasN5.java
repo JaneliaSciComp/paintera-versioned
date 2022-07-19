@@ -52,7 +52,6 @@ import org.janelia.saalfeldlab.paintera.exception.PainteraException;
 import org.janelia.saalfeldlab.paintera.state.metadata.MetadataState;
 import org.janelia.saalfeldlab.util.math.ArrayMath;
 import org.janelia.saalfeldlab.util.n5.N5Helpers;
-import org.janelia.scicomp.api.VersionedStorageAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
