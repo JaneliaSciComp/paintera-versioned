@@ -12,7 +12,7 @@ import org.janelia.saalfeldlab.paintera.state.SourceState;
 import org.janelia.saalfeldlab.paintera.state.label.ConnectomicsLabelState;
 import org.janelia.saalfeldlab.paintera.state.label.n5.N5Backend;
 import org.janelia.saalfeldlab.paintera.state.metadata.MetadataState;
-import org.janelia.saalfeldlab.paintera.ui.dialogs.create.CreateV5Dataset;
+import org.janelia.saalfeldlab.paintera.ui.dialogs.create.CreateVersionedDataset;
 import org.janelia.saalfeldlab.paintera.viewer3d.Viewer3DFX;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +77,7 @@ public class CreateVersionedDatasetHandler {
 			return;
 		}
 
-		final CreateV5Dataset cd = new CreateV5Dataset(currentSource, Arrays.stream(allSources).map(pbv.sourceInfo()::getState).toArray(SourceState[]::new));
+		final CreateVersionedDataset cd = new CreateVersionedDataset(currentSource, Arrays.stream(allSources).map(pbv.sourceInfo()::getState).toArray(SourceState[]::new));
 		final Optional<Pair<MetadataState, String>> metaAndName = cd.showDialog(projectDirectory.get());
 		if (metaAndName.isPresent()) {
 			final var metadataState = metaAndName.get().getKey();
