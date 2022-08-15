@@ -62,9 +62,6 @@ class LabelSourceStatePreferencePaneNode(
 
     val node: Node
         get() {
-            println("hello")
-            println(paintera.baseView.sourceInfo().getState(source))
-            println((paintera.baseView.sourceInfo().getState(source) as SourceStateWithBackend).backend.getMetadataState().writer)
             val box = SourceState.defaultPreferencePaneNode(composite)
             val nodes = arrayOf(
                 HighlightingStreamConverterConfigNode(converter).node,

@@ -383,14 +383,11 @@ public class N5Helpers {
 
 	if (n5 instanceof VersionedN5Reader){
 		try {
-			System.out.println("it is VersionedN5Reader");
 			String path = ((VersionedN5Reader)n5).getDatasetPath();
-			System.out.println("Path got: "+path);
 			N5FSReader reader = new N5FSReader(path);
 
 			Optional<N5TreeNode> n5TreeNode = parseMetadata(reader, (BooleanProperty)null);
 			N5_METADATA_CACHE.put(url, n5TreeNode);
-			System.out.println("node:"+n5TreeNode.get().getMetadata());
 			return n5TreeNode;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -398,7 +395,6 @@ public class N5Helpers {
 	}else{
 		Optional<N5TreeNode> n5TreeNode = parseMetadata(n5, (BooleanProperty)null);
 		N5_METADATA_CACHE.put(url, n5TreeNode);
-		System.out.println("node:"+n5TreeNode.get().getMetadata());
 		return n5TreeNode;
 	}
   }
@@ -419,10 +415,8 @@ public class N5Helpers {
 		  final ExecutorService es) {
 
 	final var discoverer = new N5DatasetDiscoverer(n5, es, METADATA_PARSERS, GROUP_PARSERS);
-	  System.out.println("disco: "+discoverer);
 	try {
 	  final N5TreeNode rootNode = discoverer.discoverAndParseRecursive("/");
-		System.out.println("root node meta: " + rootNode.getMetadata());
 	  return Optional.of(rootNode);
 	} catch (IOException e) {
 	  //FIXME give more info in error, remove stacktrace.

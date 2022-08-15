@@ -149,20 +149,13 @@ class CreateV5Dataset(private val currentSource: Source<*>?, vararg allSources: 
 //                    val pathToDataset = Path.of(datastore, dataset).toFile().canonicalPath
 
                     val writer = n5Factory.openWriter(uri) as VersionedN5Writer
-                    println("writer versioned:$writer")
-                    writer.setCurrentDataset(dataset) ;
+                    writer.setCurrentDataset(dataset)
 
 
                     N5Helpers.parseMetadata(writer).ifPresent { tree: N5TreeNode ->
-                        print("tree:")
-                        println(tree)
                         val metadata = tree.metadata
-                        println("metaa: ${metadata.path}  $metadata")
-                        println("container:$uri")
                         val containerState = N5ContainerState(uri, writer, writer)
-                        println(containerState)
                         createMetadataState(containerState, metadata).ifPresent {
-                            println("present wallah: $it ${it.dataset}")
                             metadataStateProp.set(it) }
                     }
                 } catch (ex: IOException) {
@@ -175,7 +168,6 @@ class CreateV5Dataset(private val currentSource: Source<*>?, vararg allSources: 
         val name = name.text
         val result =  Optional.ofNullable(metadataStateProp.get())
             .map { metadataState: MetadataState -> Pair(metadataState, name) }
-        println(" result: ${result.get().key.dataset} - ${result.get().key.metadata} - ${result.get().value} ")
         return result
     }
 
