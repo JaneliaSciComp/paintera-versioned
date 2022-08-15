@@ -33,6 +33,7 @@ import org.janelia.saalfeldlab.paintera.Paintera;
 import org.janelia.saalfeldlab.paintera.control.assignment.FragmentSegmentAssignmentOnlyLocal;
 import org.janelia.saalfeldlab.paintera.control.assignment.FragmentSegmentAssignmentState;
 import org.janelia.saalfeldlab.paintera.data.n5.N5FSMeta;
+import org.janelia.saalfeldlab.paintera.data.n5.N5VersionedMeta;
 import org.janelia.saalfeldlab.paintera.data.n5.ReflectionException;
 import org.janelia.saalfeldlab.paintera.exception.PainteraException;
 import org.janelia.saalfeldlab.paintera.id.IdService;
@@ -44,6 +45,7 @@ import org.janelia.saalfeldlab.util.NamedThreadFactory;
 import org.janelia.saalfeldlab.util.n5.metadata.N5PainteraDataMultiScaleMetadata;
 import org.janelia.saalfeldlab.util.n5.metadata.N5PainteraLabelMultiScaleGroup;
 import org.janelia.saalfeldlab.util.n5.metadata.N5PainteraRawMultiScaleGroup;
+import org.janelia.scicomp.v5.VersionedN5Reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -379,9 +381,26 @@ public class N5Helpers {
 	  return N5_METADATA_CACHE.get(url);
 	}
 
-	Optional<N5TreeNode> n5TreeNode = parseMetadata(n5, (BooleanProperty)null);
-	N5_METADATA_CACHE.put(url, n5TreeNode);
-	return n5TreeNode;
+	if (n5 instanceof VersionedN5Reader){
+		try {
+			System.out.println("it is VersionedN5Reader");
+			String path = ((VersionedN5Reader)n5).getDatasetPath();
+			System.out.println("Path got: "+path);
+			N5FSReader reader = new N5FSReader(path);
+
+			Optional<N5TreeNode> n5TreeNode = parseMetadata(reader, (BooleanProperty)null);
+			N5_METADATA_CACHE.put(url, n5TreeNode);
+			System.out.println("node:"+n5TreeNode.get().getMetadata());
+			return n5TreeNode;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}else{
+		Optional<N5TreeNode> n5TreeNode = parseMetadata(n5, (BooleanProperty)null);
+		N5_METADATA_CACHE.put(url, n5TreeNode);
+		System.out.println("node:"+n5TreeNode.get().getMetadata());
+		return n5TreeNode;
+	}
   }
 
   /**
@@ -400,8 +419,10 @@ public class N5Helpers {
 		  final ExecutorService es) {
 
 	final var discoverer = new N5DatasetDiscoverer(n5, es, METADATA_PARSERS, GROUP_PARSERS);
+	  System.out.println("disco: "+discoverer);
 	try {
 	  final N5TreeNode rootNode = discoverer.discoverAndParseRecursive("/");
+		System.out.println("root node meta: " + rootNode.getMetadata());
 	  return Optional.of(rootNode);
 	} catch (IOException e) {
 	  //FIXME give more info in error, remove stacktrace.
@@ -856,6 +877,20 @@ public class N5Helpers {
 						() -> new LabelBlockLookupFromFile(Paths.get(n5fs.basePath(), group, "/", "label-to-block-mapping", "s%d", "%d").toString())));
 		LOG.debug("Got lookup type: {}", lookup.getClass());
 		return lookup;
+	  } else  if (reader instanceof VersionedN5Reader && isPainteraDataset(reader, group)) {
+		  N5VersionedMeta n5fs = new N5VersionedMeta((VersionedN5Reader)reader, group);
+		  final GsonBuilder gsonBuilder = new GsonBuilder().registerTypeHierarchyAdapter(LabelBlockLookup.class, LabelBlockLookupAdapter.getJsonAdapter());
+		  final Gson gson = gsonBuilder.create();
+		  final JsonElement labelBlockLookupJson = reader.getAttribute(group, "labelBlockLookup", JsonElement.class);
+		  LOG.debug("Got label block lookup json: {}", labelBlockLookupJson);
+		  final LabelBlockLookup lookup = Optional
+				  .ofNullable(labelBlockLookupJson)
+				  .filter(JsonElement::isJsonObject)
+				  .map(obj -> gson.fromJson(obj, LabelBlockLookup.class))
+				  .orElseGet(ThrowingSupplier.unchecked(
+						  () -> new LabelBlockLookupFromFile(Paths.get(((VersionedN5Reader)reader).getDatasetPath(), group, "/", "label-to-block-mapping", "s%d", "%d").toString())));
+		  LOG.debug("Got lookup type: {}", lookup.getClass());
+		  return lookup;
 	  } else
 		throw new NotAPainteraDataset(reader, group);
 	} catch (final ReflectionException e) {

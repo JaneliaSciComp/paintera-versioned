@@ -54,6 +54,8 @@ import org.janelia.saalfeldlab.n5.s3.N5AmazonS3Reader;
 import org.janelia.saalfeldlab.n5.s3.N5AmazonS3Writer;
 import org.janelia.saalfeldlab.n5.zarr.N5ZarrReader;
 import org.janelia.saalfeldlab.n5.zarr.N5ZarrWriter;
+import org.janelia.scicomp.v5.VersionedN5Reader;
+import org.janelia.scicomp.v5.VersionedN5Writer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -84,7 +86,9 @@ public class N5Factory implements Serializable {
   private static final HashMap<String, N5AmazonS3Writer> AWS_WRITER_CACHE = new HashMap<>();
   private static final HashMap<String, N5AmazonS3Reader> AWS_READER_CACHE = new HashMap<>();
   private static final HashMap<String, N5FSWriter> FS_WRITER_CACHE = new HashMap<>();
+  private static final HashMap<String, VersionedN5Writer> VERSIONED_WRITER_CACHE = new HashMap<>();
   private static final HashMap<String, N5FSReader> FS_READER_CACHE = new HashMap<>();
+  private static final HashMap<String, VersionedN5Reader> VERSIONED_READER_CACHE = new HashMap<>();
   private static final HashMap<String, N5GoogleCloudStorageWriter> GS_WRITER_CACHE = new HashMap<>();
   private static final HashMap<String, N5GoogleCloudStorageReader> GS_READER_CACHE = new HashMap<>();
   private static byte[] HDF5_SIG = {(byte)137, 72, 68, 70, 13, 10, 26, 10};
@@ -413,6 +417,8 @@ public class N5Factory implements Serializable {
 		return openAWSS3Reader(url);
 	  else if (scheme.equals("gs"))
 		return openGoogleCloudReader(url);
+	  else if (scheme.equals("v5"))
+		  openVersionedReader(uri);
 	  else if (uri.getHost() != null && (scheme.equals("https") || scheme.equals("http"))) {
 		if (uri.getHost().matches(".*s3\\.amazonaws\\.com"))
 		  return openAWSS3Reader(url);
@@ -446,6 +452,8 @@ public class N5Factory implements Serializable {
 		  return openAWSS3Writer(url);
 		else if (scheme.equals("gs"))
 		  return openGoogleCloudWriter(url);
+		else if (scheme.equals("v5"))
+			return openVersionedWriter(uri);
 		else if (scheme.equals("https") || scheme.equals("http")) {
 		  if (uri.getHost().matches(".*s3\\.amazonaws\\.com"))
 			return openAWSS3Writer(url);
@@ -458,8 +466,37 @@ public class N5Factory implements Serializable {
 	if (isHDF5(url))
 	  return openHDF5Writer(url);
 	else if (url.matches("(?i).*\\.zarr"))
-	  return openZarrWriter(url);
+		return openZarrWriter(url);
 	else
 	  return openFSWriter(url);
   }
+
+	public VersionedN5Writer openVersionedWriter(final URI uri) throws IOException {
+		if (VERSIONED_WRITER_CACHE.containsKey(uri.toString())) {
+			return VERSIONED_WRITER_CACHE.get(uri.toString());
+		}
+
+		VersionedN5Writer versionedN5Writer = new VersionedN5Writer(uri);
+		VERSIONED_WRITER_CACHE.put(uri.toString(), versionedN5Writer);
+		return versionedN5Writer;
+	}
+
+
+	/**
+	 * Open an {@link N5Reader} for N5 filesystem.
+	 *
+	 * @param uri
+	 * @return
+	 * @throws IOException
+	 */
+	public VersionedN5Reader openVersionedReader(final URI uri) throws IOException {
+
+		if (VERSIONED_READER_CACHE.containsKey(uri.toString())) {
+			return VERSIONED_READER_CACHE.get(uri.toString());
+		}
+
+		VersionedN5Reader n5FSReader = new VersionedN5Reader(uri);
+		VERSIONED_READER_CACHE.put(uri.toString(), n5FSReader);
+		return n5FSReader;
+	}
 }

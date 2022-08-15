@@ -34,9 +34,11 @@ import org.janelia.saalfeldlab.paintera.data.mask.exception.CannotClearCanvas
 import org.janelia.saalfeldlab.paintera.meshes.ManagedMeshSettings
 import org.janelia.saalfeldlab.paintera.meshes.SegmentMeshInfos
 import org.janelia.saalfeldlab.paintera.meshes.managed.MeshManagerWithAssignmentForSegments
+import org.janelia.saalfeldlab.paintera.paintera
 import org.janelia.saalfeldlab.paintera.stream.HighlightingStreamConverter
 import org.janelia.saalfeldlab.paintera.stream.HighlightingStreamConverterConfigNode
 import org.janelia.saalfeldlab.paintera.ui.PainteraAlerts
+import org.janelia.scicomp.v5.VersionedN5Writer
 import org.slf4j.LoggerFactory
 import java.lang.invoke.MethodHandles
 import java.text.DecimalFormat
@@ -60,15 +62,21 @@ class LabelSourceStatePreferencePaneNode(
 
     val node: Node
         get() {
+            println("hello")
+            println(paintera.baseView.sourceInfo().getState(source))
+            println((paintera.baseView.sourceInfo().getState(source) as SourceStateWithBackend).backend.getMetadataState().writer)
             val box = SourceState.defaultPreferencePaneNode(composite)
             val nodes = arrayOf(
                 HighlightingStreamConverterConfigNode(converter).node,
                 SelectedIdsNode(selectedIds, assignment, selectedSegments).node,
                 LabelSourceStateMeshPaneNode(source, meshManager, SegmentMeshInfos(selectedSegments, meshManager, meshSettings, source.numMipmapLevels)).node,
                 AssignmentsNode(assignment).node,
-                when (source) {
-                    is MaskedSource -> brushProperties?.let { MaskedSourceNode(source, brushProperties).node }
-                    else -> null
+                (source as? MaskedSource)?.let { brushProperties?.let { MaskedSourceNode(source, brushProperties).node } },
+                let {
+                    (paintera.baseView.sourceInfo().getState(source) as? SourceStateWithBackend)?.let { state -> (state.backend.getMetadataState().writer as? VersionedN5Writer)?.let {
+                        VersionedSourceNode(source).node
+                    }
+                    }
                 }
             )
             box.children.addAll(nodes.filterNotNull())
@@ -273,6 +281,111 @@ class LabelSourceStatePreferencePaneNode(
                     null
             }
 
+    }
+
+    private class VersionedSourceNode(
+        private val source: DataSource<*, *>
+    ) {
+
+        val node: Node?
+            get() {
+                return if (source is MaskedSource<*, *>) {
+                    val showCanvasCheckBox = CheckBox("")
+                        .also { it.tooltip = Tooltip("Show canvas") }
+                        .also { it.selectedProperty().bindBidirectional(source.showCanvasOverBackgroundProperty()) }
+                    val clearButton = Buttons.withTooltip(
+                        "Clear",
+                        "Clear any modifications to the canvas. Any changes that have not been committed will be lost."
+                    )
+                    { showForgetAlert(source) }
+
+                    val helpDialog = PainteraAlerts.alert(Alert.AlertType.INFORMATION, true).apply {
+                        initModality(Modality.NONE)
+                        headerText = "Version manager"
+                        contentText = "TODO" /* TODO */
+                    }
+
+                    val tpGraphics = HBox(
+                        Label("Versions"),
+                        NamedNode.bufferNode(),
+                        showCanvasCheckBox,
+                        clearButton,
+                        Button("?").also { bt -> bt.onAction = EventHandler { helpDialog.show() } }
+                    ).also { it.alignment = Pos.CENTER }
+
+                    val brushSizeLabel = Labels.withTooltip(
+                        "Branch",
+                        "Checkout branch. has to exist"
+                    ).also { it.alignment = Pos.CENTER_LEFT }
+
+
+//                    val radiusSpinner = Spinner<Double>()
+                    val branchNameField = TextField()
+                    val checkoutButtons = Button("Checkout")
+//                    val radiusSpinnerValueFactory = SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, Double.MAX_VALUE, brushProperties.brushRadius, 0.5)
+                    /* Note: Unfortunately, `bindBidirectional` seems not to work here :( */
+//                    radiusSpinnerValueFactory.valueProperty().addListener { _, _, new -> brushProperties.brushRadiusProperty.set(new) }
+//                    brushProperties.brushRadiusProperty.addListener { _, _, new -> radiusSpinnerValueFactory.valueProperty().set(new.toDouble()) }
+//                    radiusSpinnerValueFactory.converter = doubleConverter
+//                    radiusSpinner.valueFactory = radiusSpinnerValueFactory
+//                    radiusSpinner.isEditable = true
+//                    radiusSpinner.addKeyAndScrollHandlers()
+
+                    val checkoutBranchPane = GridPane().apply {
+                        hgap = 5.0
+                        vgap = 5.0
+                        padding = Insets(3.0, 10.0, 3.0, 10.0)
+
+                        val bufferNode = NamedNode.bufferNode()
+                        GridPane.setHgrow(bufferNode, Priority.ALWAYS)
+
+                        add(brushSizeLabel, 0, 0)
+                        add(branchNameField, 1, 0)
+                        add(checkoutButtons, 2, 0)
+                        add(Label("Current Version"), 0, 1)
+                        add(TextField("23"), 1, 1)
+                        add(Button("Increment"), 2, 1)
+                        add(Button("Commit"), 0, 2)
+
+                    }
+
+                    val contents = VBox(checkoutBranchPane).also { it.padding = Insets.EMPTY }
+                    return TitledPanes.createCollapsed(null, contents).apply {
+                        with(TPE) { graphicsOnly(tpGraphics) }
+                        alignment = Pos.CENTER_RIGHT
+                        tooltip = null /* TODO */
+                    }
+
+                } else
+                    null
+            }
+
+        private fun showForgetAlert(source: MaskedSource<*, *>) {
+            if (showForgetAlert()) {
+                try {
+                    source.forgetCanvases()
+                } catch (e: CannotClearCanvas) {
+                    LOG.error("Unable to clear canvas.", e)
+                    Exceptions.exceptionAlert(Constants.NAME, "Unable to clear canvas.", e, owner = node?.scene?.window)
+                }
+            }
+
+        }
+
+        private fun showForgetAlert() = PainteraAlerts.confirmation("_Yes", "_No", true)
+            .also { it.headerText = "Clear Canvas" }
+            .also {
+                it.dialogPane.content = TextArea("Clearing canvas will remove all painted data that have not been committed yet. Proceed?")
+                    .also { it.isEditable = false }
+                    .also { it.isWrapText = true }
+            }
+            .showAndWait()
+            .filter { ButtonType.OK == it }
+            .isPresent
+
+        companion object {
+            private val LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass())
+        }
     }
 
     private class MaskedSourceNode(

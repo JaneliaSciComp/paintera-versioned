@@ -11,7 +11,6 @@ import org.janelia.saalfeldlab.fx.ui.NamedNode.Companion.nameIt
 import org.janelia.saalfeldlab.paintera.Constants
 import org.janelia.saalfeldlab.paintera.state.SourceState
 import org.janelia.saalfeldlab.paintera.ui.PainteraAlerts
-import org.janus.api.VersionedStorageAPI
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.lang.invoke.MethodHandles
@@ -48,7 +47,7 @@ print("hello")
                     if (localPath.isNullOrEmpty()) throw IOException("Local Path not specified!")
                     if (username.isNullOrEmpty()) throw IOException("Username not specified!")
                     // TODO in thread and waiting gui
-                    VersionedStorageAPI.cloneProject(projectPath, localPath, username)
+//                    VersionedStorageAPI.cloneProject(projectPath, localPath, username)
                     // TODO set in the state the project path
                 } catch (ex: IOException) {
                     LOG.error("Unable to create empty dataset", ex)

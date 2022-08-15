@@ -21,7 +21,7 @@ object N5Utils {
         is N5HDF5Reader -> "h5://${filename.absolutePath}"
         is N5AmazonS3Reader -> getS3Url()
         is N5GoogleCloudStorageReader -> getGoogleCloudUrl()
-        is VersionedN5Reader -> basePath
+        is VersionedN5Reader -> versionedUrl
         else -> "??://${toString()}"
     }
 

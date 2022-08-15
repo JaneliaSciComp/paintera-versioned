@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -864,7 +865,7 @@ public class N5Data {
 	 *                     already exists and {@code ignorExisting} is {@code false}
 	 */
 	public static N5Writer createEmptyVersionedLabelDataset(
-			final String container,
+			final URI uri,
 			final String group,
 			final long[] dimensions,
 			final int[] blockSize,
@@ -881,20 +882,20 @@ public class N5Data {
 
 		final Map<String, String> pd = new HashMap<>();
 		pd.put("type", "label");
-		final N5Writer n5 = VersionedN5Writer.createMaster(container);
+		final VersionedN5Writer n5 = new VersionedN5Writer(uri);
 		final String uniqueLabelsGroup = String.format("%s/unique-labels", group);
 
 		if (!ignoreExisiting && n5.datasetExists(group))
-			throw new IOException(String.format("Dataset `%s' already exists in container `%s'", group, container));
+			throw new IOException(String.format("Dataset `%s' already exists in container `%s'", group, uri));
 
 		if (!n5.exists(group))
 			n5.createGroup(group);
 
 		if (!ignoreExisiting && n5.listAttributes(group).containsKey(N5Helpers.PAINTERA_DATA_KEY))
-			throw new IOException(String.format("Group `%s' exists in container `%s' and is Paintera data set", group, container));
+			throw new IOException(String.format("Group `%s' exists in container `%s' and is Paintera data set", group, uri));
 
 		if (!ignoreExisiting && n5.exists(uniqueLabelsGroup))
-			throw new IOException(String.format("Unique labels group `%s' exists in container `%s' -- conflict likely.", uniqueLabelsGroup, container));
+			throw new IOException(String.format("Unique labels group `%s' exists in container `%s' -- conflict likely.", uniqueLabelsGroup, uri));
 
 		n5.setAttribute(group, N5Helpers.PAINTERA_DATA_KEY, pd);
 		n5.setAttribute(group, N5Helpers.MAX_ID_KEY, 1L);
