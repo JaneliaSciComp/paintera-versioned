@@ -15,7 +15,6 @@ import org.janelia.saalfeldlab.paintera.ui.dialogs.ReplDialog
 import org.janelia.saalfeldlab.paintera.ui.dialogs.create.CreateDatasetHandler
 import org.janelia.saalfeldlab.paintera.ui.dialogs.create.versioned.CloneVersionedDatasetHandler
 import org.janelia.saalfeldlab.paintera.ui.dialogs.create.versioned.CreateVersionedDatasetHandler
-import org.janelia.saalfeldlab.paintera.ui.dialogs.create.versioned.OpenVersionedDatasetHandler
 import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.menu.intersecting.IntersectingSourceStateOpener
 import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.menu.thresholded.ThresholdedRawSourceStateOpenerDialog
 import org.janelia.saalfeldlab.paintera.PainteraBaseKeys as PBK
@@ -31,7 +30,6 @@ enum class PainteraMenuItems(private val text: String, private val keys: String,
     NEW_LABEL_SOURCE("_Label Source (N5)", PBK.CREATE_NEW_LABEL_DATASET, allowedAction = MenuActionType.AddSource),
     CLONE_VERSIONED_PROJECT_SOURCE("_Clone dataset", PBK.CLONE_VERSIONED_PROJECT, allowedAction = MenuActionType.AddSource),
     NEW_VERSIONED_LABEL_SOURCE("_Create new dataset", PBK.CREATE_VERSIONED_LABEL_DATASET, allowedAction = MenuActionType.AddSource),
-    OPEN_VERSIONED_LABEL_SOURCE("Open dataset", PBK.OPEN_VERSIONED_LABEL_DATASET, allowedAction = MenuActionType.AddSource),
     NEW_CONNECTED_COMPONENT_SOURCE("_Fill Connected Components", PBK.FILL_CONNECTED_COMPONENTS),
     NEW_THRESHOLDED_SOURCE("_Thresholded", PBK.THRESHOLDED),
     TOGGLE_MENU_BAR_VISIBILITY("Toggle _Visibility", PBK.TOGGLE_MENUBAR_VISIBILITY),
@@ -67,7 +65,6 @@ enum class PainteraMenuItems(private val text: String, private val keys: String,
                 PBK.TOGGLE_CURRENT_SOURCE_VISIBILITY to EventHandler<ActionEvent> { CurrentSourceVisibilityToggle(baseView.sourceInfo().currentState()).toggleIsVisible() },
                 PBK.CREATE_NEW_LABEL_DATASET to EventHandler<ActionEvent> { CreateDatasetHandler.createAndAddNewLabelDataset(baseView) { projectDirectory.actualDirectory.absolutePath } },
                 PBK.CREATE_VERSIONED_LABEL_DATASET to EventHandler<ActionEvent> { CreateVersionedDatasetHandler.createAndAddNewLabelDataset(baseView) { projectDirectory.actualDirectory.absolutePath } },
-                PBK.OPEN_VERSIONED_LABEL_DATASET to EventHandler<ActionEvent> { OpenVersionedDatasetHandler.createAndAddNewLabelDataset(baseView) { projectDirectory.actualDirectory.absolutePath } },
                 PBK.CLONE_VERSIONED_PROJECT to EventHandler<ActionEvent> { CloneVersionedDatasetHandler.createAndAddNewLabelDataset(baseView) { projectDirectory.actualDirectory.absolutePath } },
                 PBK.SHOW_REPL_TABS to EventHandler<ActionEvent> { replDialog.show() },
                 PBK.TOGGLE_FULL_SCREEN to EventHandler<ActionEvent> { properties.windowProperties::isFullScreen.let { it.set(!it.get()) } },

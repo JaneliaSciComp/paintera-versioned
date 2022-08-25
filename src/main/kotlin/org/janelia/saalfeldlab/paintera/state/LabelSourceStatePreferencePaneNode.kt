@@ -71,7 +71,7 @@ class LabelSourceStatePreferencePaneNode(
                 (source as? MaskedSource)?.let { brushProperties?.let { MaskedSourceNode(source, brushProperties).node } },
                 let {
                     (paintera.baseView.sourceInfo().getState(source) as? SourceStateWithBackend)?.let { state -> (state.backend.getMetadataState().writer as? VersionedN5Writer)?.let {
-                        VersionedSourceNode(source).node
+                        VersionedSourceNode(source, it.currentBranch).node
                     }
                     }
                 }
@@ -281,7 +281,8 @@ class LabelSourceStatePreferencePaneNode(
     }
 
     private class VersionedSourceNode(
-        private val source: DataSource<*, *>
+        private val source: DataSource<*, *>,
+        private val branch: String
     ) {
 
         val node: Node?
@@ -332,17 +333,19 @@ class LabelSourceStatePreferencePaneNode(
                         hgap = 5.0
                         vgap = 5.0
                         padding = Insets(3.0, 10.0, 3.0, 10.0)
+                        branchNameField.isEditable = false
+                        branchNameField.text = branch
 
                         val bufferNode = NamedNode.bufferNode()
                         GridPane.setHgrow(bufferNode, Priority.ALWAYS)
 
                         add(brushSizeLabel, 0, 0)
                         add(branchNameField, 1, 0)
-                        add(checkoutButtons, 2, 0)
-                        add(Label("Current Version"), 0, 1)
-                        add(TextField("23"), 1, 1)
-                        add(Button("Increment"), 2, 1)
-                        add(Button("Commit"), 0, 2)
+//                        add(checkoutButtons, 2, 0)
+//                        add(Label("Current Version"), 0, 1)
+//                        add(TextField("23"), 1, 1)
+//                        add(Button("Increment"), 2, 1)
+//                        add(Button("Commit"), 0, 2)
 
                     }
 

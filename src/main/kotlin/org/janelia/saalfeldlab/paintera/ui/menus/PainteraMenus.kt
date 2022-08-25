@@ -63,7 +63,7 @@ private val showVersion by lazy { MenuItem("Show _Version").apply { onAction = E
 
 private val fileMenu by lazy { Menu("_File", null, openMenu, SAVE.menu, SAVE_AS.menu, QUIT.menu) }
 private val newSourceMenu by lazy { Menu("_New", null, NEW_LABEL_SOURCE.menu) }
-private val versionedSourceMenu by lazy { Menu("_Versioned", null, NEW_VERSIONED_LABEL_SOURCE.menu,CLONE_VERSIONED_PROJECT_SOURCE.menu,OPEN_VERSIONED_LABEL_SOURCE.menu) }
+private val versionedSourceMenu by lazy { Menu("_Versioned", null, NEW_VERSIONED_LABEL_SOURCE.menu,CLONE_VERSIONED_PROJECT_SOURCE.menu) }
 private val newVirtualSourceMenu by lazy { Menu("_Virtual", null, NEW_CONNECTED_COMPONENT_SOURCE.menu, NEW_THRESHOLDED_SOURCE.menu) }
 private val sourcesMenu by lazy { Menu("_Sources", null, currentSourceMenu, newSourceMenu,versionedSourceMenu, newVirtualSourceMenu) }
 private val menuBarMenu by lazy { Menu("_Menu Bar", null, TOGGLE_MENU_BAR_VISIBILITY.menu, TOGGLE_MENU_BAR_MODE.menu) }

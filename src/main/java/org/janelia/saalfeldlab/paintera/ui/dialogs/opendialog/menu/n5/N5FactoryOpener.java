@@ -29,6 +29,7 @@ import org.janelia.saalfeldlab.paintera.Paintera;
 import org.janelia.saalfeldlab.paintera.PainteraConfigYaml;
 import org.janelia.saalfeldlab.paintera.state.metadata.N5ContainerState;
 import org.janelia.saalfeldlab.paintera.ui.PainteraAlerts;
+import org.janelia.saalfeldlab.paintera.ui.dialogs.create.OpenVersionedDataset;
 import org.janelia.saalfeldlab.util.PainteraCache;
 import org.janelia.saalfeldlab.util.n5.universe.N5Factory;
 import org.slf4j.Logger;
@@ -111,8 +112,18 @@ public class N5FactoryOpener {
 	  updateFromFileChooser(initialDirectory, containerTextField.getScene().getWindow());
 	};
 
+	  final EventHandler<ActionEvent> onVersionedRepoClicked = event -> {
+		  final File initialDirectory = Optional
+				  .ofNullable(selectionProperty.get())
+				  .map(File::new)
+				  .map(f -> f.isFile() ? f.getParentFile() : f)
+				  .filter(File::exists)
+				  .orElse(Path.of(".").toAbsolutePath().toFile());
+		  updateFromVersionedDirectory(initialDirectory, containerTextField.getScene().getWindow());
+	  };
+
 	List<String> recentSelections = Lists.reverse(PainteraCache.readLines(this.getClass(), "recent"));
-	final MenuButton menuButton = BrowseRecentFavorites.menuButton("_Find", recentSelections, FAVORITES, onBrowseFoldersClicked, onBrowseFilesClicked, selectionProperty::set);
+	final MenuButton menuButton = BrowseRecentFavorites.menuButton("_Find", recentSelections, FAVORITES, onBrowseFoldersClicked, onBrowseFilesClicked, onVersionedRepoClicked, selectionProperty::set);
 
 	return new GenericBackendDialogN5(containerTextField, menuButton, "N5", containerState, isOpeningContainer);
   }
@@ -194,6 +205,11 @@ public class N5FactoryOpener {
 	if (updatedRoot != null && updatedRoot.exists() && updatedRoot.isFile())
 	  selectionProperty.set(updatedRoot.getAbsolutePath());
   }
+
+	private void updateFromVersionedDirectory(final File initialDirectory, final Window owner) {
+	  String uri = new OpenVersionedDataset().showDialog(initialDirectory.getAbsolutePath());
+	  selectionProperty.set(uri);
+	}
 
   private void updateFromDirectoryChooser(final File initialDirectory, final Window ownerWindow) {
 

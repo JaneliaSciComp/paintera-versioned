@@ -51,19 +51,23 @@ public class BrowseRecentFavorites {
 		  final List<String> favorites,
 		  final EventHandler<ActionEvent> onBrowseFoldersClicked,
 		  final EventHandler<ActionEvent> onBrowseFilesClicked,
+		  final EventHandler<ActionEvent> onVersionedRepoClicked,
 		  final Consumer<String> processSelected
   ) {
 
 	/* TODO Caleb: Maybe a custom component to let you choose files or folders? */
 	final MenuItem browseFoldersButton = new MenuItem("_Browse Folders");
-	final MenuItem browseFilesButton = new MenuItem("_Browse Files");
+	  final MenuItem browseFilesButton = new MenuItem("_Browse Files");
+	  final MenuItem versionedRepoButton = new MenuItem("_Versioned Repo");
 	final Menu recentMatcher = matcherAsMenu("_Recent", recent, processSelected);
 	final Menu favoritesMatcher = matcherAsMenu("_Favorites", favorites, processSelected);
 	browseFoldersButton.setOnAction(onBrowseFoldersClicked);
-	browseFilesButton.setOnAction(onBrowseFilesClicked);
+	  browseFilesButton.setOnAction(onBrowseFilesClicked);
+
+	  versionedRepoButton.setOnAction(onVersionedRepoClicked);
 	recentMatcher.setDisable(recent.size() == 0);
 	favoritesMatcher.setDisable(favorites.size() == 0);
-	return new MenuButton(name, null, browseFoldersButton, browseFilesButton, recentMatcher, favoritesMatcher);
+	return new MenuButton(name, null, browseFoldersButton, browseFilesButton, versionedRepoButton,recentMatcher, favoritesMatcher);
   }
 
 }
