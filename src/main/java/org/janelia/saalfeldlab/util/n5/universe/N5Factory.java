@@ -418,7 +418,7 @@ public class N5Factory implements Serializable {
 	  else if (scheme.equals("gs"))
 		return openGoogleCloudReader(url);
 	  else if (scheme.equals("v5"))
-		  openVersionedReader(uri);
+		  return openVersionedReader(uri);
 	  else if (uri.getHost() != null && (scheme.equals("https") || scheme.equals("http"))) {
 		if (uri.getHost().matches(".*s3\\.amazonaws\\.com"))
 		  return openAWSS3Reader(url);
@@ -426,6 +426,7 @@ public class N5Factory implements Serializable {
 		  return openGoogleCloudReader(url);
 	  }
 	} catch (final URISyntaxException e) {
+		System.out.println("Error: URISyntaxException "+e.getMessage());
 	}
 	if (isHDF5(url))
 	  return openHDF5Reader(url);
@@ -495,8 +496,8 @@ public class N5Factory implements Serializable {
 			return VERSIONED_READER_CACHE.get(uri.toString());
 		}
 
-		VersionedN5Reader n5FSReader = new VersionedN5Reader(uri);
-		VERSIONED_READER_CACHE.put(uri.toString(), n5FSReader);
-		return n5FSReader;
+		VersionedN5Reader versionedN5Reader = new VersionedN5Reader(uri);
+		VERSIONED_READER_CACHE.put(uri.toString(), versionedN5Reader);
+		return versionedN5Reader;
 	}
 }
