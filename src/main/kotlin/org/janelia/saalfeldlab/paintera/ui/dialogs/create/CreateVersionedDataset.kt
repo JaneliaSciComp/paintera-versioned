@@ -181,9 +181,14 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
             if (source is N5DataSourceMetadata<*, *>) {
                 val metadataState = source.metadataState
                 val container = metadataState.n5ContainerState.url
-                val v5uri = V5URI(URI(container))
-                versionedIndexField.directoryProperty().value = File(v5uri.versionedIndexPath)
-                dataStoreField.directoryProperty().value = File(v5uri.dataStorePath)
+                try {
+                    val v5uri = V5URI(URI(container))
+                    versionedIndexField.directoryProperty().value = File(v5uri.versionedIndexPath)
+                    dataStoreField.directoryProperty().value = File(v5uri.dataStorePath)
+                }catch (e:IOException){
+
+                }
+
             }
             val data = source.getSource(0, 0)
             dimensions.x.value = data.dimension(0)
