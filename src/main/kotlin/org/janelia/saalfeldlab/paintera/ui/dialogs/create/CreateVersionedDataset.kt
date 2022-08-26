@@ -117,14 +117,15 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
 
     fun showDialog(projectDirectory: String?): Optional<Pair<MetadataState, String>> {
         val metadataStateProp = SimpleObjectProperty<MetadataState>()
-        versionedIndexField.directoryProperty().value = Path.of(projectDirectory!!, "versionedIndex").toFile()
-        dataStoreField.directoryProperty().value = Path.of(projectDirectory!!, "datastore").toFile()
+        versionedIndexField.directoryProperty().value = Path.of(projectDirectory!! ).toFile()
+        dataStoreField.directoryProperty().value = Path.of(projectDirectory!!).toFile()
         PainteraAlerts.confirmation("C_reate", "_Cancel", true).apply {
             headerText = "Create new Label dataset"
             dialogPane.content = pane
             dialogPane.lookupButton(ButtonType.OK).addEventFilter(ActionEvent.ACTION) { e: ActionEvent ->
-                val versionedIndex = versionedIndexField.directoryProperty().value!!.absolutePath
-                val datastore = dataStoreField.directoryProperty().value!!.absolutePath
+
+                val versionedIndex = Path.of(versionedIndexField.directoryProperty().value!!.absolutePath,"versionedIndex").toFile().absolutePath
+                val datastore = Path.of(dataStoreField.directoryProperty().value!!.absolutePath,"datastore").toFile().absolutePath
                 val dataset = dataset.value
                 val name = name.text
                 val username = username.text
@@ -153,6 +154,8 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
                     val writer = n5Factory.openWriter(uri) as VersionedN5Writer
                     writer.setCurrentDataset(dataset)
                     writer.setUserID(username)
+
+                    writer.commit()
 
 
                     N5Helpers.parseMetadata(writer).ifPresent { tree: N5TreeNode ->
