@@ -73,7 +73,7 @@
 		<n5-google-cloud.version>3.3.2</n5-google-cloud.version>
 		<imglib2-algorithm.version>0.12.0</imglib2-algorithm.version>
 		<n5-aws-s3.version>3.2.0</n5-aws-s3.version>
-		<n5-zarr.version>0.0.8.1-SNAPSHOT</n5-zarr.version>
+<!--		<n5-zarr.version>0.0.8.1-SNAPSHOT</n5-zarr.version>-->
 		<alphanumeric-comparator.version>1.4.1</alphanumeric-comparator.version>
 		<dokka.version>1.4.30</dokka.version>
 		<!--<enforcer.skip>true</enforcer.skip>-->
@@ -87,10 +87,10 @@
 			<groupId>org.janelia.saalfeldlab</groupId>
 			<artifactId>n5-aws-s3</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.janelia.saalfeldlab</groupId>
-			<artifactId>n5-zarr</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.janelia.saalfeldlab</groupId>-->
+<!--			<artifactId>n5-zarr</artifactId>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.janelia.saalfeldlab</groupId>
 			<artifactId>n5</artifactId>
@@ -109,6 +109,12 @@
 			<groupId>org.janelia.saalfeldlab</groupId>
 			<artifactId>n5-utils</artifactId>
 			<version>0.0.5</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.janelia.saalfeldlab</groupId>
+					<artifactId>n5-zarr</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.janelia.saalfeldlab</groupId>
@@ -283,9 +289,9 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.janelia.scicomp</groupId>
-			<artifactId>versionedn5</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<groupId>com.github.JaneliaSciComp</groupId>
+			<artifactId>VersionedN5</artifactId>
+			<version>9483265</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
@@ -662,6 +668,10 @@
 		<repository>
 			<id>jzy3d</id>
 			<url>http://maven.jzy3d.org/releases</url>
+		</repository>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
 		</repository>
 	</repositories>
 
