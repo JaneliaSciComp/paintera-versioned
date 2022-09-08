@@ -291,7 +291,7 @@
 		<dependency>
 			<groupId>com.github.JaneliaSciComp</groupId>
 			<artifactId>VersionedN5</artifactId>
-			<version>ecd3335</version>
+			<version>50c6893</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
