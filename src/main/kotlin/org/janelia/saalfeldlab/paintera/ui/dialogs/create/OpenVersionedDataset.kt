@@ -35,7 +35,7 @@ class OpenVersionedDataset {
                 val indexPath = indexPathField.directoryProperty().value!!.absolutePath
                 val datastorePath= datastorePathField.directoryProperty().value!!.absolutePath
 
-                uri = V5URI.format(indexPath,datastorePath)
+                uri = V5URI(indexPath,datastorePath).uri
                 try {
                     if (indexPath.isNullOrEmpty()) throw IOException("Index Path not specified!")
                     if (datastorePath.isNullOrEmpty()) throw IOException("Datastore Path not specified!")

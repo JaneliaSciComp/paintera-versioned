@@ -11,7 +11,7 @@ import java.io.IOException
 import java.net.URI
 
 data class N5VersionedMeta(
-    @field:Expose private val n5: URI,
+    @field:Expose private val n5: String,
     @field:Expose override val dataset: String,
 ) : N5Meta {
 
@@ -23,7 +23,7 @@ data class N5VersionedMeta(
     override val reader: N5Reader = writer!!
 
     @Throws(ReflectionException::class)
-    constructor(reader: VersionedN5Reader, dataset: String) : this(URI(fromReader(reader)), dataset)
+    constructor(reader: VersionedN5Reader, dataset: String) : this(fromReader(reader), dataset)
 
     fun basePath() = n5
 

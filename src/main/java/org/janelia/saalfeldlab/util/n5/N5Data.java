@@ -850,7 +850,7 @@ public class N5Data {
   }
 
 	/**
-	 * @param container            container
+	 * @param uri            	   URI of Versioned N5
 	 * @param group                target group in {@code container}
 	 * @param dimensions           size
 	 * @param blockSize            chunk size
@@ -865,7 +865,7 @@ public class N5Data {
 	 *                     already exists and {@code ignorExisting} is {@code false}
 	 */
 	public static N5Writer createEmptyVersionedLabelDataset(
-			final URI uri,
+			final String uri,
 			final String group,
 			final long[] dimensions,
 			final int[] blockSize,

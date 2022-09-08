@@ -54,6 +54,7 @@ import org.janelia.saalfeldlab.n5.s3.N5AmazonS3Reader;
 import org.janelia.saalfeldlab.n5.s3.N5AmazonS3Writer;
 import org.janelia.saalfeldlab.n5.zarr.N5ZarrReader;
 import org.janelia.saalfeldlab.n5.zarr.N5ZarrWriter;
+import org.janelia.scicomp.v5.V5URI;
 import org.janelia.scicomp.v5.VersionedN5Reader;
 import org.janelia.scicomp.v5.VersionedN5Writer;
 
@@ -417,8 +418,7 @@ public class N5Factory implements Serializable {
 		return openAWSS3Reader(url);
 	  else if (scheme.equals("gs"))
 		return openGoogleCloudReader(url);
-	  else if (scheme.equals("v5"))
-		  return openVersionedReader(uri);
+
 	  else if (uri.getHost() != null && (scheme.equals("https") || scheme.equals("http"))) {
 		if (uri.getHost().matches(".*s3\\.amazonaws\\.com"))
 		  return openAWSS3Reader(url);
@@ -432,6 +432,8 @@ public class N5Factory implements Serializable {
 	  return openHDF5Reader(url);
 	else if (url.matches("(?i).*\\.zarr"))
 	  return openZarrReader(url);
+	else if (V5URI.isV5(url))
+		return openVersionedReader(url);
 	else
 	  return openFSReader(url);
   }
@@ -453,8 +455,6 @@ public class N5Factory implements Serializable {
 		  return openAWSS3Writer(url);
 		else if (scheme.equals("gs"))
 		  return openGoogleCloudWriter(url);
-		else if (scheme.equals("v5"))
-			return openVersionedWriter(uri);
 		else if (scheme.equals("https") || scheme.equals("http")) {
 		  if (uri.getHost().matches(".*s3\\.amazonaws\\.com"))
 			return openAWSS3Writer(url);
@@ -468,17 +468,19 @@ public class N5Factory implements Serializable {
 	  return openHDF5Writer(url);
 	else if (url.matches("(?i).*\\.zarr"))
 		return openZarrWriter(url);
+	else if (V5URI.isV5(url))
+		return openVersionedWriter(url);
 	else
 	  return openFSWriter(url);
   }
 
-	public VersionedN5Writer openVersionedWriter(final URI uri) throws IOException {
-		if (VERSIONED_WRITER_CACHE.containsKey(uri.toString())) {
-			return VERSIONED_WRITER_CACHE.get(uri.toString());
+	public VersionedN5Writer openVersionedWriter(final String uri) throws IOException {
+		if (VERSIONED_WRITER_CACHE.containsKey(uri)) {
+			return VERSIONED_WRITER_CACHE.get(uri);
 		}
 
 		VersionedN5Writer versionedN5Writer = new VersionedN5Writer(uri);
-		VERSIONED_WRITER_CACHE.put(uri.toString(), versionedN5Writer);
+		VERSIONED_WRITER_CACHE.put(uri, versionedN5Writer);
 		return versionedN5Writer;
 	}
 
@@ -490,14 +492,14 @@ public class N5Factory implements Serializable {
 	 * @return
 	 * @throws IOException
 	 */
-	public VersionedN5Reader openVersionedReader(final URI uri) throws IOException {
+	public VersionedN5Reader openVersionedReader(final String uri) throws IOException {
 
-		if (VERSIONED_READER_CACHE.containsKey(uri.toString())) {
-			return VERSIONED_READER_CACHE.get(uri.toString());
+		if (VERSIONED_READER_CACHE.containsKey(uri)) {
+			return VERSIONED_READER_CACHE.get(uri);
 		}
 
 		VersionedN5Reader versionedN5Reader = new VersionedN5Reader(uri);
-		VERSIONED_READER_CACHE.put(uri.toString(), versionedN5Reader);
+		VERSIONED_READER_CACHE.put(uri, versionedN5Reader);
 		return versionedN5Reader;
 	}
 }

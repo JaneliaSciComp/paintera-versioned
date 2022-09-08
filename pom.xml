@@ -289,9 +289,12 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+<!--			<groupId>org.janelia.scicomp</groupId>-->
+<!--			<artifactId>versionedn5</artifactId>-->
+<!--			<version>0.2.0-SNAPSHOT</version>-->
 			<groupId>com.github.JaneliaSciComp</groupId>
 			<artifactId>VersionedN5</artifactId>
-			<version>50c6893</version>
+			<version>4cf3602</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>

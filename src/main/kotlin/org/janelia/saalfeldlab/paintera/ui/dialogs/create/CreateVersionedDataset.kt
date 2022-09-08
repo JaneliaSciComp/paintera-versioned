@@ -129,15 +129,15 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
                 val dataset = dataset.value
                 val name = name.text
                 val username = username.text
-                val uri = V5URI.format(versionedIndex, datastore)
+                val v5URI = V5URI(versionedIndex, datastore).uri
                 try {
-                    LOG.warn("Trying to create empty label dataset `{}' in container `{}'", dataset, uri)
+                    LOG.warn("Trying to create empty label dataset `{}' in container `{}'", dataset, v5URI)
                     if (dataset.isNullOrEmpty()) throw IOException("Dataset not specified!")
                     if (name.isNullOrEmpty()) throw IOException("Name not specified!")
                     if (username.isNullOrEmpty()) throw IOException("Username not specified!")
 
                     N5Data.createEmptyVersionedLabelDataset(
-                        URI(uri),
+                        v5URI,
                         dataset,
                         dimensions.asLongArray(),
                         blockSize.asIntArray(),
@@ -151,7 +151,7 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
 //                    val writer: VersionedN5Writer = n5.openDataset(dataset)
 //                    val pathToDataset = Path.of(datastore, dataset).toFile().canonicalPath
 
-                    val writer = n5Factory.openWriter(uri) as VersionedN5Writer
+                    val writer = n5Factory.openWriter(v5URI) as VersionedN5Writer
                     writer.setCurrentDataset(dataset)
                     writer.setUserID(username)
 
@@ -160,7 +160,7 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
 
                     N5Helpers.parseMetadata(writer).ifPresent { tree: N5TreeNode ->
                         val metadata = tree.metadata
-                        val containerState = N5ContainerState(uri, writer, writer)
+                        val containerState = N5ContainerState(v5URI, writer, writer)
                         createMetadataState(containerState, metadata).ifPresent {
                             metadataStateProp.set(it) }
                     }
@@ -185,9 +185,9 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
                 val metadataState = source.metadataState
                 val container = metadataState.n5ContainerState.url
                 try {
-                    val v5uri = V5URI(URI(container))
-                    versionedIndexField.directoryProperty().value = File(v5uri.versionedIndexPath)
-                    dataStoreField.directoryProperty().value = File(v5uri.dataStorePath)
+                    val v5uri = V5URI(container)
+                    versionedIndexField.directoryProperty().value = File(v5uri.indexesPath)
+                    dataStoreField.directoryProperty().value = File(v5uri.keyValueStorePath)
                 }catch (e:Exception){
 
                 }
