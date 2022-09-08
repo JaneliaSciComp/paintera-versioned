@@ -188,7 +188,7 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
                     val v5uri = V5URI(URI(container))
                     versionedIndexField.directoryProperty().value = File(v5uri.versionedIndexPath)
                     dataStoreField.directoryProperty().value = File(v5uri.dataStorePath)
-                }catch (e:IOException){
+                }catch (e:Exception){
 
                 }
 
