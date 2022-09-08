@@ -164,7 +164,7 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
                         createMetadataState(containerState, metadata).ifPresent {
                             metadataStateProp.set(it) }
                     }
-                } catch (ex: IOException) {
+                } catch (ex: Exception) {
                     LOG.error("Unable to create empty dataset", ex)
                     e.consume()
                     exceptionAlert(Constants.NAME, "Unable to create new dataset: ${ex.message}", ex).show()
