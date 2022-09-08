@@ -168,7 +168,7 @@ public class PainteraBaseView {
 	  isDisabledProperty.unbind();
 
 	  final var isDisableBinding = disabledPropertyBindings.values().stream()
-			  .reduce(BooleanExpression::and)
+			  .reduce(BooleanExpression::or)
 			  .orElseGet(() -> Bindings.createBooleanBinding(() -> false));
 
 	  isDisabledProperty.bind(isDisableBinding);

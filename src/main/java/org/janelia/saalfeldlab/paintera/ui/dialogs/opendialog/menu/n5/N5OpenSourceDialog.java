@@ -260,7 +260,7 @@ public class N5OpenSourceDialog extends Dialog<GenericBackendDialogN5> implement
 	return reversed;
   }
 
-  private static void addSource(
+  public static void addSource(
 		  final String name,
 		  final MetaPanel.TYPE type,
 		  final GenericBackendDialogN5 backendDialog,

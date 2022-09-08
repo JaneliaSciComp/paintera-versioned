@@ -3,17 +3,23 @@ package org.janelia.saalfeldlab.paintera.ui.dialogs.create.versioned;
 import bdv.viewer.Source;
 import javafx.scene.Scene;
 import javafx.scene.SubScene;
+import javafx.scene.control.Alert;
+import javafx.stage.Modality;
 import org.janelia.saalfeldlab.fx.ui.Exceptions;
 import org.janelia.saalfeldlab.paintera.Constants;
 import org.janelia.saalfeldlab.paintera.PainteraBaseView;
 import org.janelia.saalfeldlab.paintera.control.actions.MenuActionType;
 import org.janelia.saalfeldlab.paintera.state.SourceState;
 import org.janelia.saalfeldlab.paintera.ui.dialogs.create.CloneVersionedDataset;
+import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.menu.n5.GenericBackendDialogN5;
+import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.menu.n5.N5FactoryOpener;
+import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.menu.n5.N5OpenSourceDialog;
 import org.janelia.saalfeldlab.paintera.viewer3d.Viewer3DFX;
 import org.janelia.scicomp.api.VersionedStorageAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Optional;
@@ -76,6 +82,26 @@ public class CloneVersionedDatasetHandler {
 
 		final CloneVersionedDataset cd = new CloneVersionedDataset(currentSource, Arrays.stream(allSources).map(pbv.sourceInfo()::getState).toArray(SourceState[]::new));
 		String path = cd.showDialog(projectDirectory.get());
-		VersionedStorageAPI.setCurrentPath(path);
+		if(path == null)
+			return;
+		N5FactoryOpener opener = new N5FactoryOpener();
+		opener.getSelectionProperty().set(path);
+		try (final GenericBackendDialogN5 dialog = opener.backendDialog()) {
+			N5OpenSourceDialog osDialog = new N5OpenSourceDialog(pbv, dialog);
+			osDialog.setHeaderFromBackendType("source");
+			Optional<GenericBackendDialogN5> optBackend = osDialog.showAndWait();
+			if (optBackend.isEmpty())
+				return;
+			N5OpenSourceDialog.addSource(osDialog.getName(), osDialog.getType(), dialog, osDialog.getChannelSelection(), pbv, projectDirectory);
+			opener.selectionAccepted();
+		} catch (Exception e1) {
+			LOG.debug("Unable to open dataset", e1);
+
+			Alert alert = Exceptions.exceptionAlert(Constants.NAME, "Unable to open data set", e1);
+			alert.initModality(Modality.APPLICATION_MODAL);
+			Optional.ofNullable(pbv.getPane().getScene()).map(Scene::getWindow).ifPresent(alert::initOwner);
+			alert.show();
+		}
+
 	}
 }

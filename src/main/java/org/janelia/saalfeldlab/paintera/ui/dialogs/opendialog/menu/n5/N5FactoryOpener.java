@@ -314,4 +314,8 @@ public class N5FactoryOpener {
 			.onEnd(task -> invoke(() -> this.isOpeningContainer.set(false)))
 			.submit();
   }
+
+	public StringProperty getSelectionProperty() {
+		return selectionProperty;
+	}
 }

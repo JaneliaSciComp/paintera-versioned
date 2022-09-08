@@ -5,14 +5,17 @@ import bdv.ij.util.ProgressWriterIJ
 import bdv.viewer.Source
 import javafx.beans.property.ReadOnlyDoubleWrapper
 import javafx.event.ActionEvent
+import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
 import javafx.scene.control.TextField
 import javafx.scene.layout.VBox
+import org.janelia.saalfeldlab.fx.Tasks
 import org.janelia.saalfeldlab.fx.ui.DirectoryField
 import org.janelia.saalfeldlab.fx.ui.Exceptions.Companion.exceptionAlert
 import org.janelia.saalfeldlab.fx.ui.NamedNode.Companion.nameIt
 import org.janelia.saalfeldlab.fx.util.InvokeOnJavaFXApplicationThread
 import org.janelia.saalfeldlab.paintera.Constants
+import org.janelia.saalfeldlab.paintera.paintera
 import org.janelia.saalfeldlab.paintera.state.SourceState
 import org.janelia.saalfeldlab.paintera.ui.PainteraAlerts
 import org.janelia.scicomp.api.VersionedStorageAPI
@@ -39,11 +42,15 @@ class CloneVersionedDataset(private val currentSource: Source<*>?, vararg allSou
         nameIt("Local path:", NAME_WIDTH, true, localPathField.asNode())
     )
 
-    fun showDialog(projectDirectory: String?): String {
+    fun showDialog(projectDirectory: String?): String? {
 //        localPath.directoryProperty().value = Path.of(projectDirectory!!).toFile()
+        var path : String?= null
         PainteraAlerts.confirmation("C_lone", "_Cancel", true).apply {
             headerText = "Clone project"
             dialogPane.content = pane
+
+
+
             dialogPane.lookupButton(ButtonType.OK).addEventFilter(ActionEvent.ACTION) { e: ActionEvent ->
                 val username = username.text
                 val indexPath = indexPathField.directoryProperty().value!!.absolutePath
@@ -61,21 +68,28 @@ class CloneVersionedDataset(private val currentSource: Source<*>?, vararg allSou
                     InvokeOnJavaFXApplicationThread.invoke(Runnable { progress.set(0.1) })
                     val progressWriter: ProgressWriter = ProgressWriterIJ()
                     progressWriter.out().println("starting export...")
-                    val writer = VersionedN5Writer.cloneFrom(indexPath,localPath,dataPath,username)
-                    InvokeOnJavaFXApplicationThread.invoke(Runnable { progress.set(1.0) })
-                    progressWriter.setProgress(1.0)
+                    Tasks.createTask<VersionedN5Writer> {
+                        paintera.baseView.disabledPropertyBindings.put(it, it.valueProperty().isNull)
+                        VersionedN5Writer.cloneFrom(indexPath,localPath,dataPath,username)
+                    }.onEnd { it ->
+                        val writer = it.value
+                        path = writer.versionedUrl
+                        InvokeOnJavaFXApplicationThread.invoke(Runnable { progress.set(1.0) })
+                        progressWriter.setProgress(1.0)
+                        paintera.baseView.disabledPropertyBindings.remove(it)
+                    }.submit()
 
 
-                    // TODO set in the state the project path
-                } catch (ex: IOException) {
+                } catch (ex: Exception) {
+//                    var alert = PainteraAlerts.alert(Alert.AlertType.ERROR)
+//                    alert.headerText = ""
                     LOG.error("Unable to create empty dataset", ex)
                     e.consume()
                     exceptionAlert(Constants.NAME, "Unable to create new dataset: ${ex.message}", ex).show()
                 }
             }
         }.showAndWait()
-//TODO propagate dataset
-        return ""
+        return path
     }
 
     companion object {
