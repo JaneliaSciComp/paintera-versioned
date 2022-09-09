@@ -68,16 +68,17 @@ class CloneVersionedDataset(private val currentSource: Source<*>?, vararg allSou
                     InvokeOnJavaFXApplicationThread.invoke(Runnable { progress.set(0.1) })
                     val progressWriter: ProgressWriter = ProgressWriterIJ()
                     progressWriter.out().println("starting export...")
-                    Tasks.createTask<VersionedN5Writer> {
-                        paintera.baseView.disabledPropertyBindings.put(it, it.valueProperty().isNull)
+                    //TODO waiting for Caleb to fix
+//                    Tasks.createTask<VersionedN5Writer> {
+//                        paintera.baseView.disabledPropertyBindings.put(it, it.valueProperty().isNull)
                         VersionedN5Writer.cloneFrom(indexPath,localPath,dataPath,username)
-                    }.onEnd { it ->
+//                    }.onEnd { it ->
                         val writer = it.value
                         path = writer.versionedUrl
                         InvokeOnJavaFXApplicationThread.invoke(Runnable { progress.set(1.0) })
                         progressWriter.setProgress(1.0)
-                        paintera.baseView.disabledPropertyBindings.remove(it)
-                    }.submit()
+//                        paintera.baseView.disabledPropertyBindings.remove(it)
+//                    }.submit()
 
 
                 } catch (ex: Exception) {
