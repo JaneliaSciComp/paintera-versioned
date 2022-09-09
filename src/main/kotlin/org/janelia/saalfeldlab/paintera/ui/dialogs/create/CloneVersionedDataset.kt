@@ -71,9 +71,9 @@ class CloneVersionedDataset(private val currentSource: Source<*>?, vararg allSou
                     //TODO waiting for Caleb to fix
 //                    Tasks.createTask<VersionedN5Writer> {
 //                        paintera.baseView.disabledPropertyBindings.put(it, it.valueProperty().isNull)
-                        VersionedN5Writer.cloneFrom(indexPath,localPath,dataPath,username)
+                    val writer  =   VersionedN5Writer.cloneFrom(indexPath,localPath,dataPath,username)
 //                    }.onEnd { it ->
-                        val writer = it.value
+//                        val writer = it.value
                         path = writer.versionedUrl
                         InvokeOnJavaFXApplicationThread.invoke(Runnable { progress.set(1.0) })
                         progressWriter.setProgress(1.0)
