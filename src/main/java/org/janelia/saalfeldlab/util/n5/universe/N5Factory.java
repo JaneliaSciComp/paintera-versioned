@@ -428,12 +428,13 @@ public class N5Factory implements Serializable {
 	} catch (final URISyntaxException e) {
 		System.out.println("Error: URISyntaxException "+e.getMessage());
 	}
-	if (isHDF5(url))
-	  return openHDF5Reader(url);
+	  if (V5URI.isV5(url))
+		  return openVersionedReader(url);
+
 	else if (url.matches("(?i).*\\.zarr"))
 	  return openZarrReader(url);
-	else if (V5URI.isV5(url))
-		return openVersionedReader(url);
+	else if (isHDF5(url))
+		  return openHDF5Reader(url);
 	else
 	  return openFSReader(url);
   }
@@ -464,12 +465,12 @@ public class N5Factory implements Serializable {
 	  }
 	} catch (final URISyntaxException e) {
 	}
-	if (isHDF5(url))
-	  return openHDF5Writer(url);
+	  if (V5URI.isV5(url))
+		  return openVersionedWriter(url);
 	else if (url.matches("(?i).*\\.zarr"))
 		return openZarrWriter(url);
-	else if (V5URI.isV5(url))
-		return openVersionedWriter(url);
+	 else if (isHDF5(url))
+		  return openHDF5Writer(url);
 	else
 	  return openFSWriter(url);
   }
