@@ -54,9 +54,9 @@ import org.janelia.saalfeldlab.n5.s3.N5AmazonS3Reader;
 import org.janelia.saalfeldlab.n5.s3.N5AmazonS3Writer;
 import org.janelia.saalfeldlab.n5.zarr.N5ZarrReader;
 import org.janelia.saalfeldlab.n5.zarr.N5ZarrWriter;
-import org.janelia.scicomp.v5.V5URI;
-import org.janelia.scicomp.v5.VersionedN5Reader;
-import org.janelia.scicomp.v5.VersionedN5Writer;
+import org.janelia.scicomp.v5.fs.V5FSReader;
+import org.janelia.scicomp.v5.fs.V5FSWriter;
+import org.janelia.scicomp.v5.lib.uri.V5FSURL;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -87,9 +87,9 @@ public class N5Factory implements Serializable {
   private static final HashMap<String, N5AmazonS3Writer> AWS_WRITER_CACHE = new HashMap<>();
   private static final HashMap<String, N5AmazonS3Reader> AWS_READER_CACHE = new HashMap<>();
   private static final HashMap<String, N5FSWriter> FS_WRITER_CACHE = new HashMap<>();
-  private static final HashMap<String, VersionedN5Writer> VERSIONED_WRITER_CACHE = new HashMap<>();
+  private static final HashMap<String, V5FSWriter> VERSIONED_WRITER_CACHE = new HashMap<>();
   private static final HashMap<String, N5FSReader> FS_READER_CACHE = new HashMap<>();
-  private static final HashMap<String, VersionedN5Reader> VERSIONED_READER_CACHE = new HashMap<>();
+  private static final HashMap<String, V5FSReader> VERSIONED_READER_CACHE = new HashMap<>();
   private static final HashMap<String, N5GoogleCloudStorageWriter> GS_WRITER_CACHE = new HashMap<>();
   private static final HashMap<String, N5GoogleCloudStorageReader> GS_READER_CACHE = new HashMap<>();
   private static byte[] HDF5_SIG = {(byte)137, 72, 68, 70, 13, 10, 26, 10};
@@ -428,7 +428,7 @@ public class N5Factory implements Serializable {
 	} catch (final URISyntaxException e) {
 		System.out.println("Error: URISyntaxException "+e.getMessage());
 	}
-	  if (V5URI.isV5(url))
+	  if (V5FSURL.isV5(url))
 		  return openVersionedReader(url);
 
 	else if (url.matches("(?i).*\\.zarr"))
@@ -465,7 +465,7 @@ public class N5Factory implements Serializable {
 	  }
 	} catch (final URISyntaxException e) {
 	}
-	  if (V5URI.isV5(url))
+	  if (V5FSURL.isV5(url))
 		  return openVersionedWriter(url);
 	else if (url.matches("(?i).*\\.zarr"))
 		return openZarrWriter(url);
@@ -475,12 +475,12 @@ public class N5Factory implements Serializable {
 	  return openFSWriter(url);
   }
 
-	public VersionedN5Writer openVersionedWriter(final String uri) throws IOException {
+	public V5FSWriter openVersionedWriter(final String uri) throws IOException {
 		if (VERSIONED_WRITER_CACHE.containsKey(uri)) {
 			return VERSIONED_WRITER_CACHE.get(uri);
 		}
 
-		VersionedN5Writer versionedN5Writer = new VersionedN5Writer(uri);
+		V5FSWriter versionedN5Writer = new V5FSWriter(new V5FSURL(uri));
 		VERSIONED_WRITER_CACHE.put(uri, versionedN5Writer);
 		return versionedN5Writer;
 	}
@@ -493,13 +493,13 @@ public class N5Factory implements Serializable {
 	 * @return
 	 * @throws IOException
 	 */
-	public VersionedN5Reader openVersionedReader(final String uri) throws IOException {
+	public V5FSReader openVersionedReader(final String uri) throws IOException {
 
 		if (VERSIONED_READER_CACHE.containsKey(uri)) {
 			return VERSIONED_READER_CACHE.get(uri);
 		}
 
-		VersionedN5Reader versionedN5Reader = new VersionedN5Reader(uri);
+		V5FSReader versionedN5Reader = new V5FSReader(new V5FSURL(uri));
 		VERSIONED_READER_CACHE.put(uri, versionedN5Reader);
 		return versionedN5Reader;
 	}

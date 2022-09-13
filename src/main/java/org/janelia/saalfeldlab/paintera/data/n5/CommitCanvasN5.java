@@ -32,7 +32,6 @@ import net.imglib2.util.Pair;
 import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.janelia.saalfeldlab.fx.util.InvokeOnJavaFXApplicationThread;
 import org.janelia.saalfeldlab.labels.blocks.LabelBlockLookup;
 import org.janelia.saalfeldlab.labels.blocks.LabelBlockLookupKey;
@@ -53,7 +52,7 @@ import org.janelia.saalfeldlab.paintera.exception.PainteraException;
 import org.janelia.saalfeldlab.paintera.state.metadata.MetadataState;
 import org.janelia.saalfeldlab.util.math.ArrayMath;
 import org.janelia.saalfeldlab.util.n5.N5Helpers;
-import org.janelia.scicomp.v5.VersionedN5Writer;
+import org.janelia.scicomp.v5.lib.V5Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -307,19 +306,14 @@ public class CommitCanvasN5 implements PersistCanvas {
 
 				}
 
-				//TODO change this to V5Writer
-				if (n5Writer instanceof VersionedN5Writer) {
-					try {
-						((VersionedN5Writer) n5Writer).commit();
-					} catch (GitAPIException e) {
-						throw new RuntimeException(e);
-					}
+				if (n5Writer instanceof V5Writer) {
+						((V5Writer) n5Writer).commit();
 				}
 
 				InvokeOnJavaFXApplicationThread.invoke(() -> progress.set(1.0));
 
 			}
-			LOG.info("Finished commiting canvas");
+			LOG.info("Finished committing canvas");
 			return blockDiffs;
 
 		} catch (final IOException | PainteraException e) {
