@@ -15,7 +15,6 @@ import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.menu.n5.GenericBac
 import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.menu.n5.N5FactoryOpener;
 import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.menu.n5.N5OpenSourceDialog;
 import org.janelia.saalfeldlab.paintera.viewer3d.Viewer3DFX;
-import org.janelia.scicomp.api.VersionedStorageAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

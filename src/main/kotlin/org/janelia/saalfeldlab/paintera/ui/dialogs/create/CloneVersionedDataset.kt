@@ -5,22 +5,17 @@ import bdv.ij.util.ProgressWriterIJ
 import bdv.viewer.Source
 import javafx.beans.property.ReadOnlyDoubleWrapper
 import javafx.event.ActionEvent
-import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
 import javafx.scene.control.TextField
 import javafx.scene.layout.VBox
-import org.janelia.saalfeldlab.fx.Tasks
 import org.janelia.saalfeldlab.fx.ui.DirectoryField
 import org.janelia.saalfeldlab.fx.ui.Exceptions.Companion.exceptionAlert
 import org.janelia.saalfeldlab.fx.ui.NamedNode.Companion.nameIt
 import org.janelia.saalfeldlab.fx.util.InvokeOnJavaFXApplicationThread
 import org.janelia.saalfeldlab.paintera.Constants
-import org.janelia.saalfeldlab.paintera.paintera
 import org.janelia.saalfeldlab.paintera.state.SourceState
 import org.janelia.saalfeldlab.paintera.ui.PainteraAlerts
-import org.janelia.scicomp.api.VersionedStorageAPI
-import org.janelia.scicomp.lib.VersionedDirectory
-import org.janelia.scicomp.v5.VersionedN5Writer
+import org.janelia.scicomp.v5.fs.V5FSWriter
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.lang.invoke.MethodHandles
@@ -71,7 +66,7 @@ class CloneVersionedDataset(private val currentSource: Source<*>?, vararg allSou
                     //TODO waiting for Caleb to fix
 //                    Tasks.createTask<VersionedN5Writer> {
 //                        paintera.baseView.disabledPropertyBindings.put(it, it.valueProperty().isNull)
-                    val writer  =   VersionedN5Writer.cloneFrom(indexPath,localPath,dataPath,username)
+                    val writer  =   V5FSWriter.cloneFrom(indexPath,localPath,dataPath,username)
 //                    }.onEnd { it ->
 //                        val writer = it.value
                         path = writer.versionedUrl

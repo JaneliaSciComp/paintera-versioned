@@ -8,12 +8,11 @@ import org.janelia.saalfeldlab.fx.ui.Exceptions.Companion.exceptionAlert
 import org.janelia.saalfeldlab.fx.ui.NamedNode.Companion.nameIt
 import org.janelia.saalfeldlab.paintera.Constants
 import org.janelia.saalfeldlab.paintera.ui.PainteraAlerts
-import org.janelia.scicomp.v5.V5URI
+import org.janelia.scicomp.v5.lib.uri.V5FSURL
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.lang.invoke.MethodHandles
 import java.nio.file.Path
-
 
 class OpenVersionedDataset {
 
@@ -35,12 +34,11 @@ class OpenVersionedDataset {
                 val indexPath = indexPathField.directoryProperty().value!!.absolutePath
                 val datastorePath= datastorePathField.directoryProperty().value!!.absolutePath
 
-                uri = V5URI(indexPath,datastorePath).uri
+                uri = V5FSURL(indexPath,datastorePath).url
                 try {
                     if (indexPath.isNullOrEmpty()) throw IOException("Index Path not specified!")
                     if (datastorePath.isNullOrEmpty()) throw IOException("Datastore Path not specified!")
                     if ( uri == "") throw IOException("Invalid URI!")
-
 
                 } catch (ex: IOException) {
                     LOG.error("Unable to create empty dataset", ex)

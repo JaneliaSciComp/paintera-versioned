@@ -38,7 +38,7 @@ import org.janelia.saalfeldlab.paintera.paintera
 import org.janelia.saalfeldlab.paintera.stream.HighlightingStreamConverter
 import org.janelia.saalfeldlab.paintera.stream.HighlightingStreamConverterConfigNode
 import org.janelia.saalfeldlab.paintera.ui.PainteraAlerts
-import org.janelia.scicomp.v5.VersionedN5Writer
+import org.janelia.scicomp.v5.fs.V5FSWriter
 import org.slf4j.LoggerFactory
 import java.lang.invoke.MethodHandles
 import java.text.DecimalFormat
@@ -70,8 +70,8 @@ class LabelSourceStatePreferencePaneNode(
                 AssignmentsNode(assignment).node,
                 (source as? MaskedSource)?.let { brushProperties?.let { MaskedSourceNode(source, brushProperties).node } },
                 let {
-                    (paintera.baseView.sourceInfo().getState(source) as? SourceStateWithBackend)?.let { state -> (state.backend.getMetadataState().writer as? VersionedN5Writer)?.let {
-                        VersionedSourceNode(source, it.currentBranch).node
+                    (paintera.baseView.sourceInfo().getState(source) as? SourceStateWithBackend)?.let { state -> (state.backend.getMetadataState().writer as? V5FSWriter)?.let {
+                        VersionedSourceNode(source, it).node
                     }
                     }
                 }
@@ -282,7 +282,7 @@ class LabelSourceStatePreferencePaneNode(
 
     private class VersionedSourceNode(
         private val source: DataSource<*, *>,
-        private val branch: String
+        private val n5: V5FSWriter
     ) {
 
         val node: Node?
@@ -299,8 +299,9 @@ class LabelSourceStatePreferencePaneNode(
 
                     val helpDialog = PainteraAlerts.alert(Alert.AlertType.INFORMATION, true).apply {
                         initModality(Modality.NONE)
-                        headerText = "Version manager"
-                        contentText = "TODO" /* TODO */
+                        headerText = "Versioned Data Panel"
+                        contentText = "Panel used for V5Writer \n CurrentBranch: Specify the branch you are working on. Master or your username" +
+                            "\n SessionID: is the current session ID incremental "
                     }
 
                     val tpGraphics = HBox(
@@ -311,42 +312,31 @@ class LabelSourceStatePreferencePaneNode(
                         Button("?").also { bt -> bt.onAction = EventHandler { helpDialog.show() } }
                     ).also { it.alignment = Pos.CENTER }
 
-                    val brushSizeLabel = Labels.withTooltip(
-                        "Branch",
-                        "Checkout branch. has to exist"
-                    ).also { it.alignment = Pos.CENTER_LEFT }
 
-
-//                    val radiusSpinner = Spinner<Double>()
                     val branchNameField = TextField()
-                    val checkoutButtons = Button("Checkout")
-//                    val radiusSpinnerValueFactory = SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, Double.MAX_VALUE, brushProperties.brushRadius, 0.5)
-                    /* Note: Unfortunately, `bindBidirectional` seems not to work here :( */
-//                    radiusSpinnerValueFactory.valueProperty().addListener { _, _, new -> brushProperties.brushRadiusProperty.set(new) }
-//                    brushProperties.brushRadiusProperty.addListener { _, _, new -> radiusSpinnerValueFactory.valueProperty().set(new.toDouble()) }
-//                    radiusSpinnerValueFactory.converter = doubleConverter
-//                    radiusSpinner.valueFactory = radiusSpinnerValueFactory
-//                    radiusSpinner.isEditable = true
-//                    radiusSpinner.addKeyAndScrollHandlers()
+                    branchNameField.text = n5.currentBranch
+                    branchNameField.isEditable = false
+
+                    val sessionIDField = TextField()
+                    sessionIDField.text = n5.currentSession.get().toString()
+                    sessionIDField.isEditable = false
+
+                    val incrementSessionID = Button("Increment")
+                    incrementSessionID.setOnAction { sessionIDField.text = n5.incrementSession().get().toString() }
 
                     val checkoutBranchPane = GridPane().apply {
                         hgap = 5.0
                         vgap = 5.0
                         padding = Insets(3.0, 10.0, 3.0, 10.0)
-                        branchNameField.isEditable = false
-                        branchNameField.text = branch
 
                         val bufferNode = NamedNode.bufferNode()
                         GridPane.setHgrow(bufferNode, Priority.ALWAYS)
 
-                        add(brushSizeLabel, 0, 0)
+                        add(Label("Branch:"), 0, 0)
                         add(branchNameField, 1, 0)
-//                        add(checkoutButtons, 2, 0)
-//                        add(Label("Current Version"), 0, 1)
-//                        add(TextField("23"), 1, 1)
-//                        add(Button("Increment"), 2, 1)
-//                        add(Button("Commit"), 0, 2)
-
+                        add(Label("SessionID:"), 0, 1)
+                        add(sessionIDField, 1, 1)
+                        add(incrementSessionID, 2, 1)
                     }
 
                     val contents = VBox(checkoutBranchPane).also { it.padding = Insets.EMPTY }

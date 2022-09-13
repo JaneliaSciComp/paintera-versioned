@@ -45,7 +45,7 @@ import org.janelia.saalfeldlab.util.NamedThreadFactory;
 import org.janelia.saalfeldlab.util.n5.metadata.N5PainteraDataMultiScaleMetadata;
 import org.janelia.saalfeldlab.util.n5.metadata.N5PainteraLabelMultiScaleGroup;
 import org.janelia.saalfeldlab.util.n5.metadata.N5PainteraRawMultiScaleGroup;
-import org.janelia.scicomp.v5.VersionedN5Reader;
+import org.janelia.scicomp.v5.fs.V5FSReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -380,23 +380,9 @@ public class N5Helpers {
 	if (N5_METADATA_CACHE.containsKey(url)) {
 	  return N5_METADATA_CACHE.get(url);
 	}
-
-	if (n5 instanceof VersionedN5Reader){
-		try {
-			String path = ((VersionedN5Reader)n5).getDatasetPath();
-			N5FSReader reader = new N5FSReader(path);
-
-			Optional<N5TreeNode> n5TreeNode = parseMetadata(reader, (BooleanProperty)null);
-			N5_METADATA_CACHE.put(url, n5TreeNode);
-			return n5TreeNode;
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}else{
 		Optional<N5TreeNode> n5TreeNode = parseMetadata(n5, (BooleanProperty)null);
 		N5_METADATA_CACHE.put(url, n5TreeNode);
 		return n5TreeNode;
-	}
   }
 
   /**
@@ -871,8 +857,8 @@ public class N5Helpers {
 						() -> new LabelBlockLookupFromFile(Paths.get(n5fs.basePath(), group, "/", "label-to-block-mapping", "s%d", "%d").toString())));
 		LOG.debug("Got lookup type: {}", lookup.getClass());
 		return lookup;
-	  } else  if (reader instanceof VersionedN5Reader && isPainteraDataset(reader, group)) {
-		  N5VersionedMeta n5fs = new N5VersionedMeta((VersionedN5Reader)reader, group);
+	  } else  if (reader instanceof V5FSReader && isPainteraDataset(reader, group)) {
+		  N5VersionedMeta v5fs = new N5VersionedMeta((V5FSReader)reader, group);
 		  final GsonBuilder gsonBuilder = new GsonBuilder().registerTypeHierarchyAdapter(LabelBlockLookup.class, LabelBlockLookupAdapter.getJsonAdapter());
 		  final Gson gson = gsonBuilder.create();
 		  final JsonElement labelBlockLookupJson = reader.getAttribute(group, "labelBlockLookup", JsonElement.class);
@@ -882,7 +868,7 @@ public class N5Helpers {
 				  .filter(JsonElement::isJsonObject)
 				  .map(obj -> gson.fromJson(obj, LabelBlockLookup.class))
 				  .orElseGet(ThrowingSupplier.unchecked(
-						  () -> new LabelBlockLookupFromFile(Paths.get(((VersionedN5Reader)reader).getDatasetPath(), group, "/", "label-to-block-mapping", "s%d", "%d").toString())));
+						  () -> new LabelBlockLookupFromFile(Paths.get(v5fs.basePath(), group, "/", "label-to-block-mapping", "s%d", "%d").toString())));
 		  LOG.debug("Got lookup type: {}", lookup.getClass());
 		  return lookup;
 	  } else

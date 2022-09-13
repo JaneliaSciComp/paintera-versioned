@@ -49,7 +49,8 @@ import org.janelia.saalfeldlab.paintera.state.metadata.SingleScaleMetadataState;
 import org.janelia.saalfeldlab.paintera.ui.dialogs.opendialog.VolatileHelpers;
 import org.janelia.saalfeldlab.util.NamedThreadFactory;
 import org.janelia.saalfeldlab.util.TmpVolatileHelpers;
-import org.janelia.scicomp.v5.VersionedN5Writer;
+import org.janelia.scicomp.v5.fs.V5FSWriter;
+import org.janelia.scicomp.v5.lib.uri.V5FSURL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -881,7 +882,7 @@ public class N5Data {
 
 		final Map<String, String> pd = new HashMap<>();
 		pd.put("type", "label");
-		final VersionedN5Writer n5 = new VersionedN5Writer(uri);
+		final V5FSWriter n5 = new V5FSWriter(new V5FSURL(uri));
 		final String uniqueLabelsGroup = String.format("%s/unique-labels", group);
 
 		if (!ignoreExisiting && n5.datasetExists(group))
