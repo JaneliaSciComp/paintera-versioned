@@ -126,11 +126,11 @@ public class CommitCanvasN5 implements PersistCanvas {
 
 			final LabelBlockLookup labelBlockLoader = ThrowingSupplier.unchecked(() -> N5Helpers.getLabelBlockLookup(metadataState)).get();
 			if (labelBlockLoader instanceof IsRelativeToContainer)
-				((IsRelativeToContainer) labelBlockLoader).setRelativeTo(n5Writer, this.dataset);
+				((IsRelativeToContainer)labelBlockLoader).setRelativeTo(n5Writer, this.dataset);
 
 			final String[] scaleUniqueLabels = N5Helpers.listAndSortScaleDatasets(n5Writer, uniqueLabelsPath);
 
-			LOG.debug("Found scale datasets {}", (Object) scaleUniqueLabels);
+			LOG.debug("Found scale datasets {}", (Object)scaleUniqueLabels);
 			for (int level = 0; level < scaleUniqueLabels.length; ++level) {
 				final DatasetSpec datasetUniqueLabels = DatasetSpec.of(n5Writer, Paths.get(uniqueLabelsPath, scaleUniqueLabels[level]).toString());
 				final TLongObjectMap<TLongHashSet> removedById = new TLongObjectHashMap<>();
@@ -307,8 +307,14 @@ public class CommitCanvasN5 implements PersistCanvas {
 
 				}
 
-				if (n5Writer instanceof VersionedN5Writer)
-					((VersionedN5Writer) n5Writer).commit();
+				//TODO change this to V5Writer
+				if (n5Writer instanceof VersionedN5Writer) {
+					try {
+						((VersionedN5Writer) n5Writer).commit();
+					} catch (GitAPIException e) {
+						throw new RuntimeException(e);
+					}
+				}
 
 				InvokeOnJavaFXApplicationThread.invoke(() -> progress.set(1.0));
 
@@ -316,7 +322,7 @@ public class CommitCanvasN5 implements PersistCanvas {
 			LOG.info("Finished commiting canvas");
 			return blockDiffs;
 
-		} catch (final IOException | PainteraException | GitAPIException e) {
+		} catch (final IOException | PainteraException e) {
 			LOG.error("Unable to commit canvas.", e);
 			throw new UnableToPersistCanvas("Unable to commit canvas.", e);
 		}
@@ -329,7 +335,7 @@ public class CommitCanvasN5 implements PersistCanvas {
 			final long[] gridPosition) throws IOException {
 
 		return Optional.ofNullable(n5.readBlock(uniqueLabelsDataset, uniqueLabelsAttributes, gridPosition))
-				.map(b -> (LongArrayDataBlock) b)
+				.map(b -> (LongArrayDataBlock)b)
 				.map(LongArrayDataBlock::getData)
 				.orElse(new long[]{});
 	}
@@ -573,7 +579,7 @@ public class CommitCanvasN5 implements PersistCanvas {
 		final var entry = new LabelMultisetEntry();
 		labels.forEach(lmt -> {
 			for (LabelMultisetEntry iterEntry : lmt.entrySetWithRef(entry)) {
-				blockDiff.addToOldUniqueLabels(iterEntry.getElement().id());
+				blockDiff.addToNewUniqueLabels(iterEntry.getElement().id());
 			}
 		});
 		return blockDiff;
@@ -629,7 +635,7 @@ public class CommitCanvasN5 implements PersistCanvas {
 			blockSpec.fromLinearIndex(blockId);
 			final IntervalView<Pair<LabelMultisetType, UnsignedLongType>> backgroundWithCanvas = Views
 					.interval(Views.pair(highestResolutionData, canvas), blockSpec.asInterval());
-			final int numElements = (int) Intervals.numElements(backgroundWithCanvas);
+			final int numElements = (int)Intervals.numElements(backgroundWithCanvas);
 			final byte[] byteData = LabelUtils.serializeLabelMultisetTypes(new BackgroundCanvasIterable(Views.flatIterable(backgroundWithCanvas)), numElements);
 			final ByteArrayDataBlock dataBlock = new ByteArrayDataBlock(Intervals.dimensionsAsIntArray(backgroundWithCanvas), blockSpec.pos, byteData);
 			datasetSpec.container.writeBlock(datasetSpec.dataset, datasetSpec.attributes, dataBlock);
@@ -713,8 +719,8 @@ public class CommitCanvasN5 implements PersistCanvas {
 			final DataBlock<?> block = n5.readBlock(targetDataset.dataset, targetDataset.attributes, blockSpec.pos);
 			final VolatileLabelMultisetArray oldAccess = block != null && block.getData() instanceof byte[]
 					? LabelUtils.fromBytes(
-					(byte[]) block.getData(),
-					(int) Intervals.numElements(size))
+					(byte[])block.getData(),
+					(int)Intervals.numElements(size))
 					: null;
 
 			final VolatileLabelMultisetArray newAccess = downsampleVolatileLabelMultisetArrayAndSerialize(
@@ -726,7 +732,7 @@ public class CommitCanvasN5 implements PersistCanvas {
 					targetMaxNumEntries,
 					size,
 					blockSpec.pos);
-			final int numElements = (int) Intervals.numElements(size);
+			final int numElements = (int)Intervals.numElements(size);
 			blockDiffsAt.put(
 					targetBlock,
 					oldAccess == null
@@ -797,8 +803,7 @@ public class CommitCanvasN5 implements PersistCanvas {
 			t.set(s1);
 	}
 
-	@Override
-	public ReadOnlyDoubleProperty getProgressProperty() {
+	@Override public ReadOnlyDoubleProperty getProgressProperty() {
 
 		return progress.getReadOnlyProperty();
 	}
