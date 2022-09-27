@@ -132,7 +132,7 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
                     if (dataset.isNullOrEmpty()) throw IOException("Dataset not specified!")
                     if (name.isNullOrEmpty()) throw IOException("Name not specified!")
 
-                    N5Data.createEmptyVersionedLabelDataset(
+                   N5Data.createEmptyVersionedLabelDataset(
                         v5URI.url,
                         dataset,
                         dimensions.asLongArray(),
@@ -146,7 +146,7 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
 
 //                    val writer: VersionedN5Writer = n5.openDataset(dataset)
 //                    val pathToDataset = Path.of(datastore, dataset).toFile().canonicalPath
-
+//TODO fix dataset
                     var nV5URI = v5URI.forDataset(dataset);
                     val writer = n5Factory.openWriter(nV5URI.url) as V5FSWriter
 
@@ -154,7 +154,7 @@ class CreateVersionedDataset(private val currentSource: Source<*>?, vararg allSo
 
                     N5Helpers.parseMetadata(writer).ifPresent { tree: N5TreeNode ->
                         val metadata = tree.metadata
-                        val containerState = N5ContainerState(nV5URI.url, writer, writer)
+                        val containerState = N5ContainerState(v5URI.url, writer, writer)
                         createMetadataState(containerState, metadata).ifPresent {
                             metadataStateProp.set(it) }
                     }

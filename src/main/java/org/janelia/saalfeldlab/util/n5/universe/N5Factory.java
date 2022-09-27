@@ -476,6 +476,8 @@ public class N5Factory implements Serializable {
   }
 
 	public V5FSWriter openVersionedWriter(final String uri) throws IOException {
+	  if (!V5FSURL.isV5(uri))
+		  throw new IOException("Invalid V5 uri: "+uri);
 		if (VERSIONED_WRITER_CACHE.containsKey(uri)) {
 			return VERSIONED_WRITER_CACHE.get(uri);
 		}
@@ -494,6 +496,8 @@ public class N5Factory implements Serializable {
 	 * @throws IOException
 	 */
 	public V5FSReader openVersionedReader(final String uri) throws IOException {
+		if (!V5FSURL.isV5(uri))
+			throw new IOException("Invalid V5 uri: "+uri);
 
 		if (VERSIONED_READER_CACHE.containsKey(uri)) {
 			return VERSIONED_READER_CACHE.get(uri);
