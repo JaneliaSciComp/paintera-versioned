@@ -98,7 +98,7 @@ public class CloneVersionedDatasetHandler {
 
 			Alert alert = Exceptions.exceptionAlert(Constants.NAME, "Unable to open data set", e1);
 			alert.initModality(Modality.APPLICATION_MODAL);
-			Optional.ofNullable(pbv.getPane().getScene()).map(Scene::getWindow).ifPresent(alert::initOwner);
+			Optional.ofNullable(pbv.getNode().getScene()).map(Scene::getWindow).ifPresent(alert::initOwner);
 			alert.show();
 		}
 
