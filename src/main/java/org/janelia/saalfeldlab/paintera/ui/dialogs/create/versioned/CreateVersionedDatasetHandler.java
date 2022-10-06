@@ -96,8 +96,6 @@ public class CreateVersionedDatasetHandler {
 					pbv.getQueue(),
 					0,
 					metaAndName.get().getValue(),
-					metadataState.getPixelResolution(),
-					metadataState.getOffset(),
 					null));
 		}
 	}
